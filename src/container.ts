@@ -9,6 +9,9 @@ import { AuthRepository } from "./modules/auth/auth.repository";
 import { AuthService } from "./modules/auth/auth.service";
 import { AuthController } from "./modules/auth/auth.controller";
 import { buildDynamicSearch } from "./utils/dynamic-search-utils";
+import { CommonRepository } from "./modules/common/common.repository";
+import { CommonService } from "./modules/common/common.service";
+import { CommonController } from "./modules/common/common.controller";
 
 export const hashUtils = new HashUtils();
 export const jwtUtils = new JwtUtils();
@@ -29,4 +32,7 @@ export const authService = new AuthService(
 export const authMiddleware = new AuthMiddleware(jwtUtils, userRepository);
 export const authController = new AuthController(authService);
 
+export const commonRepository = new CommonRepository();
+export const commonService = new CommonService(commonRepository);
+export const commonController = new CommonController(commonService);
 

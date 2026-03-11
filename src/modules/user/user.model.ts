@@ -14,19 +14,7 @@ const userSchema = new Schema({
   role: {
     type: String,
     required: true,
-    enum: ["admin", "sales-rep", "production-manager"],
-  },
-  comission:{
-    type: Number, // In perecentage
-    default: function(this: any) {
-      if (this.role === "admin") return 0;
-      if (this.role === "sales-rep") return 5;
-      if (this.role === "production-manager") return 0
-      return 0;
-    },
-  },
-  cluster: {
-    type: String,
+    enum: ["admin", "user"],
   },
   profileImage:{
     type: String,
@@ -40,6 +28,12 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  dateOfBirth: {
+    type: Date,
+  },
+  country: {
+    type: String,
   },
 });
 
