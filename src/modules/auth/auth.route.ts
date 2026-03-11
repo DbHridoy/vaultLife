@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
-import { createUserSchema, loginUserSchema } from "./auth.schema";
+import { loginUserSchema, registerUserSchema } from "./auth.schema";
 import { authController } from "../../container";
 
 const authRoute = Router();
@@ -9,8 +9,8 @@ const authRoute = Router();
 // Register route
 authRoute.post(
   "/register",
-  validate(createUserSchema),
-  authController.createUser
+  validate(registerUserSchema),
+  authController.registerUser
 );
 
 authRoute.post("/login", validate(loginUserSchema), authController.loginUser);

@@ -4,7 +4,7 @@ import { Errors } from "../../constants/error-codes";
 import bcrypt from "bcrypt";
 import { AuthRepository } from "./auth.repository";
 import {UserRepository} from "../user/user.repository";
-import { createUserType } from "./auth.type";
+import { RegisterUserType } from "./auth.type";
 import { HashUtils } from "../../utils/hash-utils";
 import { JwtUtils } from "../../utils/jwt-utils";
 import { Mailer } from "../../utils/mailer-utils";
@@ -13,13 +13,13 @@ export class AuthService {
 
   constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer) {}
 
-  createUser = async (userBody: createUserType) => {
+  registerUser = async (userBody: RegisterUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
 
     if (existingUser) {
       throw new apiError(
         Errors.AlreadyExists.code,
-        Errors.AlreadyExists.message
+        "User already exists"
       );
     }
     const hashedPassword = await this.hashUtils.hashPassword(userBody.password);

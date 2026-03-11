@@ -1,15 +1,23 @@
-import {z} from 'zod'
+import { z } from 'zod'
 
-export const createUserSchema=z.object({
-    fullName:z.string(),
-    email:z.email(),
-    role:z.enum(['production-manager','sales-rep','admin']),
-    password:z.string()
-})
+export const registerUserSchema = z.object({
+    fullName: z.string(),
+    email: z.email(),
+    role: z.enum(['user', 'admin']),
+    password: z.string(),
+    confirmPassword: z.string(),
+}).refine((data) => data.password.length >= 6, {
+    message: "Password must be at least 6 characters long",
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+}).transform(({ confirmPassword, ...rest }) => rest);
 
-export const loginUserSchema=z.object({
-    email:z.email(),
-    password:z.string()
-})
+export const loginUserSchema = z.object({
+    email: z.email(),
+    password: z.string()
+}).refine((data) => data.password.length >= 6, {
+    message: "Password must be at least 6 characters long",
+});
 
 

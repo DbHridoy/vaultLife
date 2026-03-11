@@ -10,14 +10,14 @@ import { apiError } from "../../errors/api-error";
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  createUser = asyncHandler(
+  registerUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const userBody = req.body;
       logger.info(userBody, "userBody");
-      const newUser = await this.authService.createUser(userBody);
+      const newUser = await this.authService.registerUser(userBody);
       res.status(HttpCodes.Created).json({
         success: true,
-        message: "User created successfully",
+        message: "User registered successfully",
         data: newUser,
       });
     }
