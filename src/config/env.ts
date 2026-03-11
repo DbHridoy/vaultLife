@@ -19,13 +19,13 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRY: z.string().default("7d"),
   JWT_REFRESH_EXPIRY: z.string().default("30d"),
 
-  GMAIL_USER: z.string().min(1, "Gmail user required"),
-  GMAIL_PASS: z.string().min(1, "Gmail password required"),
+  // GMAIL_USER: z.string().min(1, "Gmail user required"),
+  // GMAIL_PASS: z.string().min(1, "Gmail password required"),
 
-  S3_BUCKET_REGION: z.string().min(1, "AWS region required"),
-  AWS_ACCESS_KEY: z.string().min(1, "AWS access key required"),
-  AWS_SECRET_KEY: z.string().min(1, "AWS secret key required"),
-  S3_BUCKET_NAME: z.string().min(1, "AWS bucket name required"),
+  // S3_BUCKET_REGION: z.string().min(1, "AWS region required"),
+  // AWS_ACCESS_KEY: z.string().min(1, "AWS access key required"),
+  // AWS_SECRET_KEY: z.string().min(1, "AWS secret key required"),
+  // S3_BUCKET_NAME: z.string().min(1, "AWS bucket name required"),
 });
 
 export const env = envSchema.parse(process.env);
