@@ -8,6 +8,7 @@ import { RegisterUserType } from "./auth.type";
 import { HashUtils } from "../../utils/hash-utils";
 import { JwtUtils } from "../../utils/jwt-utils";
 import { Mailer } from "../../utils/mailer-utils";
+import { Roles } from "../../constants/roles";
 
 export class AuthService {
 
@@ -27,6 +28,7 @@ export class AuthService {
 
     const user = {
       ...userBody,
+      role: Roles.User,
       password: hashedPassword,
     };
 
@@ -40,7 +42,11 @@ export class AuthService {
     const user = await this.userRepo.findUserByEmail(email);
     logger.info({ user }, "User from service");
     if (!user) {
-      throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+      throw new apiError(Errors.NotFound.code, 'User not found');
+    }
+
+    if (user.twoFactorEnabled) {
+      throw new apiError(Errors.Unauthorized.code, 'Two factor authentication is enabled');
     }
 
     const isVerified = bcrypt.compareSync(password, user.password);

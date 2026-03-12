@@ -92,7 +92,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"role\": \"admin\",\n  \"password\": \"Password123!\"\n}"
+              "raw": "{\n  \"fullName\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"role\": \"admin\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"twoFactorEnabled\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -104,7 +104,7 @@
                 "register"
               ]
             },
-            "description": "Creates a user through the auth module."
+            "description": "Creates a user through the auth module. Validation requires fullName, email, role, password, confirmPassword, and optionally twoFactorEnabled."
           },
           "response": []
         },
@@ -146,7 +146,7 @@
                 "login"
               ]
             },
-            "description": "Authenticates a user. The response includes access and refresh tokens, and the backend also sets a refreshToken cookie."
+            "description": "Authenticates a user. The response includes access and refresh tokens, and the backend also sets a `refreshToken` cookie for refresh/logout flows."
           },
           "response": []
         },
@@ -262,7 +262,7 @@
                 "refresh-token"
               ]
             },
-            "description": "Uses the refreshToken cookie. In Postman, run Login first so the cookie jar is populated."
+            "description": "Uses the `refreshToken` cookie set by Login. In Postman, run Login first with the cookie jar enabled."
           },
           "response": []
         },
@@ -281,7 +281,7 @@
                 "logout"
               ]
             },
-            "description": "Clears the refreshToken cookie."
+            "description": "Clears the `refreshToken` cookie. Run Login first so Postman has a cookie to send."
           },
           "response": []
         }
@@ -552,6 +552,103 @@
               ]
             },
             "description": "Deletes a user by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Common",
+      "item": [
+        {
+          "name": "Get Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/common",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "common"
+              ]
+            },
+            "description": "Fetches the shared common content document."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Content",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aboutUs\": \"We provide distribution and support services.\",\n  \"termsAndCondition\": \"Orders are subject to approval and stock availability.\",\n  \"servicePolicy\": \"Service requests are addressed within 48 hours.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/common",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "common"
+              ]
+            },
+            "description": "Creates the common content document. This route requires an authenticated admin user."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Content",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aboutUs\": \"We provide nationwide distribution and support services.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/common",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "common"
+              ]
+            },
+            "description": "Updates one or more common content fields. This route requires an authenticated admin user."
           },
           "response": []
         }

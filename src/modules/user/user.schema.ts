@@ -1,4 +1,5 @@
 import z from "zod";
+import { roleValues } from "../../constants/roles";
 
 const UserSchema = z.object({
   fullName: z.string(),
@@ -6,7 +7,7 @@ const UserSchema = z.object({
   phoneNumber: z.string(),
   address: z.string(),
   cluster: z.string(),
-  role: z.enum(["admin", "sales-rep", "production-manager"]),
+  role: z.enum(roleValues),
   password: z.string(),
   profileImage: z.string(),
 });
@@ -22,4 +23,10 @@ export const CreateUserSchema = UserSchema.omit({
   profileImage: true,
 }).partial({
   cluster: true,
+});
+
+export const UpdateNotificationPreferencesSchema = z.object({
+  email: z.boolean(),
+  push: z.boolean(),
+  pushNotificationToken: z.string().trim().optional(),
 });

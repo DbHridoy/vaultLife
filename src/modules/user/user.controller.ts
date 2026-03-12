@@ -11,6 +11,7 @@ import {
   TypedRequestBodyWithFile,
 } from "../../types/request.type";
 import { createUserType } from "./user.type";
+import { updateNotificationPreferencesType } from "./user.type";
 
 export class UserController {
   constructor(private userService: UserService) {}
@@ -21,8 +22,11 @@ export class UserController {
       next: NextFunction
     ) => {
       const body = req.body;
+      if (!req.user?.userId || !req.user.role) {
+        throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+      }
       logger.info({ user: req.user, body }, "Creating user");
-      const user = await this.userService.createUser(body);
+      const user = await this.userService.createUser(req.user, body);
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "User created successfully",
@@ -126,6 +130,29 @@ export class UserController {
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Profile updated successfully",
+        data: updatedUser,
+      });
+    }
+  );
+  updateNotificationPreferences = asyncHandler(
+    async (
+      req: TypedRequestBody<updateNotificationPreferencesType>,
+      res: Response,
+      next: NextFunction
+    ) => {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+      }
+
+      const updatedUser = await this.userService.updateNotificationPreferences(
+        userId,
+        req.body
+      );
+
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Notification preferences updated successfully",
         data: updatedUser,
       });
     }

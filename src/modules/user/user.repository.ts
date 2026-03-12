@@ -14,7 +14,7 @@ export class UserRepository {
     const { filter, search, options } = this.buildDynamicSearch(User, query);
 
     const baseQuery = {
-      role: { $ne: "admin" },
+      role: { $ne: "superadmin" },
       ...filter,
       ...search,
     };
@@ -55,7 +55,7 @@ export class UserRepository {
     const { filter, search, options } = this.buildDynamicSearch(User, query);
 
     const baseQuery = {
-      role: { $eq: "sales-rep" },
+      role: { $eq: "admin" },
       ...filter,
       ...search,
     };
@@ -70,5 +70,27 @@ export class UserRepository {
   };
   updateUser = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
+  };
+  updateNotificationPreferences = async (
+    id: string,
+    preferences: {
+      email: boolean;
+      push: boolean;
+      pushNotificationToken?: string;
+    }
+  ) => {
+    return await User.findByIdAndUpdate(
+      id,
+      {
+        notificationPreferences: {
+          email: preferences.email,
+          push: preferences.push,
+        },
+        ...(preferences.pushNotificationToken !== undefined
+          ? { pushNotificationToken: preferences.pushNotificationToken }
+          : {}),
+      },
+      { new: true }
+    );
   };
 }

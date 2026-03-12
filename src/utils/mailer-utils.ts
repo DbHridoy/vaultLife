@@ -27,4 +27,15 @@ export class Mailer {
       `,
     });
   }
+  sendNotification = async (email: string, title: string, message: string) => {
+    await transporter.sendMail({
+      from: `"Developer" <${env.GMAIL_USER}>`,
+      to: email,
+      subject: title,
+      html: `
+        <h3>${title}</h3>
+        <p>${message}</p>
+      `,
+    });
+  };
 }

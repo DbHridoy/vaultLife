@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { roleValues } from "../../constants/roles";
 
 const userSchema = new Schema({
   fullName: {
@@ -14,7 +15,11 @@ const userSchema = new Schema({
   role: {
     type: String,
     required: true,
-    enum: ["admin", "user"],
+    enum: roleValues,
+  },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false,
   },
   profileImage:{
     type: String,
@@ -34,6 +39,20 @@ const userSchema = new Schema({
   },
   country: {
     type: String,
+  },
+  notificationPreferences: {
+    email: {
+      type: Boolean,
+      default: true,
+    },
+    push: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  pushNotificationToken: {
+    type: String,
+    trim: true,
   },
 });
 

@@ -3,9 +3,9 @@ import { z } from 'zod'
 export const registerUserSchema = z.object({
     fullName: z.string(),
     email: z.email(),
-    role: z.enum(['user', 'admin']),
     password: z.string(),
     confirmPassword: z.string(),
+    twoFactorEnabled: z.boolean().default(false),
 }).refine((data) => data.password.length >= 6, {
     message: "Password must be at least 6 characters long",
 }).refine((data) => data.password === data.confirmPassword, {
@@ -19,5 +19,4 @@ export const loginUserSchema = z.object({
 }).refine((data) => data.password.length >= 6, {
     message: "Password must be at least 6 characters long",
 });
-
 

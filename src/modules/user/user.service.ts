@@ -7,6 +7,7 @@ import { hashUtils } from "../../container";
 import { mailer } from "../../container";
 import { HashUtils } from "../../utils/hash-utils";
 import { Mailer } from "../../utils/mailer-utils";
+import { Roles, Role } from "../../constants/roles";
 
 export class UserService {
   constructor(
@@ -23,13 +24,26 @@ export class UserService {
 updateUser=async(id:string,body:any)=>{
   return await this.userRepo.updateUser(id,body)
 }
-  createUser = async (userBody: createUserType) => {
+  createUser = async (
+    actor: { userId: string; role: string },
+    userBody: createUserType
+  ) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
 
     if (existingUser) {
       throw new apiError(
         Errors.AlreadyExists.code,
         "User already exists with this email"
+      );
+    }
+
+    if (
+      (userBody.role === Roles.Admin || userBody.role === Roles.SuperAdmin) &&
+      actor.role !== Roles.SuperAdmin
+    ) {
+      throw new apiError(
+        Errors.Forbidden.code,
+        "Only superadmin can create admin or superadmin accounts"
       );
     }
 
@@ -57,4 +71,14 @@ updateUser=async(id:string,body:any)=>{
   deleteUser=async(id:string)=>{
     return await this.userRepo.deleteUser(id)
   }
+  updateNotificationPreferences = async (
+    id: string,
+    preferences: {
+      email: boolean;
+      push: boolean;
+      pushNotificationToken?: string;
+    }
+  ) => {
+    return await this.userRepo.updateNotificationPreferences(id, preferences);
+  };
 }
