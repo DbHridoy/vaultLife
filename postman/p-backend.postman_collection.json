@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "d0b9c2c8-8d59-4f39-bf64-9a7aa7b2b6d4",
     "name": "p-backend API",
-    "description": "Postman collection generated from the Express routes in this repository. Uses {{baseUrl}} with a default of http://localhost:5000/api/v1. Login and refresh requests store tokens in collection variables.",
+    "description": "Postman collection synced with the current Express routes. Uses {{baseUrl}} with a default of http://localhost:5000/api/v1. Login stores tokens in collection variables.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -33,6 +33,18 @@
     },
     {
       "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "documentId",
+      "value": ""
+    },
+    {
+      "key": "reminderId",
+      "value": ""
+    },
+    {
+      "key": "supportId",
       "value": ""
     }
   ],
@@ -81,7 +93,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register",
+          "name": "Register User",
           "request": {
             "method": "POST",
             "header": [
@@ -92,7 +104,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"role\": \"admin\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"twoFactorEnabled\": false\n}"
+              "raw": "{\n  \"fullName\": \"Regular User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"twoFactorEnabled\": false\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -104,7 +116,7 @@
                 "register"
               ]
             },
-            "description": "Creates a user through the auth module. Validation requires fullName, email, role, password, confirmPassword, and optionally twoFactorEnabled."
+            "description": "Public registration. This flow now always creates a normal user account."
           },
           "response": []
         },
@@ -134,7 +146,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
@@ -146,7 +158,7 @@
                 "login"
               ]
             },
-            "description": "Authenticates a user. The response includes access and refresh tokens, and the backend also sets a `refreshToken` cookie for refresh/logout flows."
+            "description": "Authenticates a user and stores the returned tokens in collection variables."
           },
           "response": []
         },
@@ -162,7 +174,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/send-otp",
@@ -174,7 +186,7 @@
                 "send-otp"
               ]
             },
-            "description": "Sends a 4-digit OTP for password reset."
+            "description": "Sends a password reset OTP to the given email."
           },
           "response": []
         },
@@ -190,7 +202,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"otp\": \"1234\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"1234\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/verify-otp",
@@ -202,7 +214,7 @@
                 "verify-otp"
               ]
             },
-            "description": "Verifies the OTP previously sent to the user."
+            "description": "Verifies the OTP sent to the user."
           },
           "response": []
         },
@@ -218,7 +230,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"newPassword\": \"NewPassword123!\",\n  \"confirmPassword\": \"NewPassword123!\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"newPassword\": \"NewPassword123!\",\n  \"confirmPassword\": \"NewPassword123!\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/set-new-password",
@@ -230,7 +242,7 @@
                 "set-new-password"
               ]
             },
-            "description": "Resets the password after OTP verification. The route only checks that newPassword and confirmPassword match."
+            "description": "Updates the password after OTP verification."
           },
           "response": []
         },
@@ -262,7 +274,7 @@
                 "refresh-token"
               ]
             },
-            "description": "Uses the `refreshToken` cookie set by Login. In Postman, run Login first with the cookie jar enabled."
+            "description": "Uses the refreshToken cookie set during login."
           },
           "response": []
         },
@@ -281,7 +293,7 @@
                 "logout"
               ]
             },
-            "description": "Clears the `refreshToken` cookie. Run Login first so Postman has a cookie to send."
+            "description": "Clears the refreshToken cookie."
           },
           "response": []
         }
@@ -293,6 +305,16 @@
         {
           "name": "Create User",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -302,7 +324,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Sales Rep\",\n  \"email\": \"sales@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"sales-rep\",\n  \"cluster\": \"Dhaka North\"\n}"
+              "raw": "{\n  \"fullName\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"admin\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/user",
@@ -313,7 +335,7 @@
                 "user"
               ]
             },
-            "description": "Creates a user from the user module. Validation requires fullName, email, password, and role. cluster is optional."
+            "description": "Creates a new user. Only superadmin can create admin or superadmin accounts."
           },
           "response": []
         },
@@ -392,7 +414,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/user/sales-reps?page=1&limit=10&search=sales",
+              "raw": "{{baseUrl}}/user/sales-reps?page=1&limit=10&search=admin",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -411,11 +433,11 @@
                 },
                 {
                   "key": "search",
-                  "value": "sales"
+                  "value": "admin"
                 }
               ]
             },
-            "description": "Lists sales reps with the same query behavior as the general user listing."
+            "description": "Legacy route name. The backend still exposes this path."
           },
           "response": []
         },
@@ -434,7 +456,46 @@
                 "{{userId}}"
               ]
             },
-            "description": "Fetches a single user by MongoDB id."
+            "description": "Fetches a single user by id."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Notification Preferences",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"pushNotificationToken\": \"device-token-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "notification-preferences"
+              ]
+            },
+            "description": "Updates email/push preferences and the optional push token."
           },
           "response": []
         },
@@ -488,7 +549,7 @@
                 "me"
               ]
             },
-            "description": "Multipart profile update. The backend accepts the file field name `profileImage`. Authorization currently allows admin, sales-rep, and production-manager."
+            "description": "Multipart profile update. The backend accepts the file field name `profileImage`."
           },
           "response": []
         },
@@ -507,12 +568,7 @@
                 },
                 {
                   "key": "role",
-                  "value": "sales-rep",
-                  "type": "text"
-                },
-                {
-                  "key": "cluster",
-                  "value": "Dhaka South",
+                  "value": "user",
                   "type": "text"
                 },
                 {
@@ -532,7 +588,7 @@
                 "{{userId}}"
               ]
             },
-            "description": "Updates a user by id. The route parses multipart form data but does not currently enforce auth in the router."
+            "description": "Updates a user by id. This route currently parses multipart form data and does not enforce auth in the router."
           },
           "response": []
         },
@@ -611,7 +667,7 @@
                 "common"
               ]
             },
-            "description": "Creates the common content document. This route requires an authenticated admin user."
+            "description": "Creates the common content document. Requires admin or superadmin."
           },
           "response": []
         },
@@ -648,7 +704,550 @@
                 "common"
               ]
             },
-            "description": "Updates one or more common content fields. This route requires an authenticated admin user."
+            "description": "Updates one or more common content fields. Requires admin or superadmin."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Upload Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?._id) pm.collectionVariables.set('documentId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/document/upload",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document",
+                "upload"
+              ]
+            },
+            "description": "Uploads a document, runs AI extraction, uploads the file to S3, and stores the record in MongoDB."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Documents",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/document",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document"
+              ]
+            },
+            "description": "Returns all documents visible to the authenticated user route."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/document/{{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document",
+                "{{documentId}}"
+              ]
+            },
+            "description": "Fetches a document by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reminders",
+      "item": [
+        {
+          "name": "Create Reminder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?._id) pm.collectionVariables.set('reminderId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-10T09:00:00.000Z\",\n  \"message\": \"Passport expires soon\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminder",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder"
+              ]
+            },
+            "description": "Creates a reminder for a document owned by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Reminders",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reminder/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder",
+                "me"
+              ]
+            },
+            "description": "Returns reminders for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Reminder",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminder/{{reminderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder",
+                "{{reminderId}}"
+              ]
+            },
+            "description": "Updates reminder fields such as `remindAt`, `message`, or `status`."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Reminder",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reminder/{{reminderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder",
+                "{{reminderId}}"
+              ]
+            },
+            "description": "Deletes a reminder owned by the authenticated user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Create My Notification",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Document reminder\",\n  \"message\": \"Your passport is expiring soon\",\n  \"documentId\": \"{{documentId}}\",\n  \"reminderId\": \"{{reminderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notification/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "me"
+              ]
+            },
+            "description": "Creates and sends a notification to the authenticated user according to their preferences."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notification/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "me"
+              ]
+            },
+            "description": "Lists notifications for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Process Due Reminders",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notification/process-due-reminders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "process-due-reminders"
+              ]
+            },
+            "description": "Admin or superadmin route that processes pending due reminders and creates notifications."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Support",
+      "item": [
+        {
+          "name": "Create Support Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?._id) pm.collectionVariables.set('supportId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unable to upload passport\",\n  \"description\": \"The upload fails after selecting the file.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/support",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support"
+              ]
+            },
+            "description": "Creates a help and support report for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Support Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/support/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support",
+                "me"
+              ]
+            },
+            "description": "Lists support reports created by the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Support Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/support",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support"
+              ]
+            },
+            "description": "Admin or superadmin route for listing all support reports."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Support Report By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/support/{{supportId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support",
+                "{{supportId}}"
+              ]
+            },
+            "description": "Admin or superadmin route for fetching a single support report."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Support Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"resolved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/support/{{supportId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support",
+                "{{supportId}}",
+                "status"
+              ]
+            },
+            "description": "Admin or superadmin route for updating a support report status."
           },
           "response": []
         }
