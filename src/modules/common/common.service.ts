@@ -1,4 +1,5 @@
 import { Errors } from "../../constants/error-codes";
+import { HttpCodes } from "../../constants/status-codes";
 import { apiError } from "../../errors/api-error";
 import { CommonRepository } from "./common.repository";
 import { createCommonType, updateCommonType } from "./common.type";
@@ -6,14 +7,33 @@ import { createCommonType, updateCommonType } from "./common.type";
 export class CommonService {
   constructor(private commonRepo: CommonRepository) {}
 
-  getContent = async () => {
-    const content = await this.commonRepo.getContent();
-
+  private normalizeContent = async (content: any) => {
     if (!content) {
-      throw new apiError(Errors.NotFound.code, "Common content not found");
+      return {
+        aboutUs: "",
+        termsAndCondition: "",
+        privacyPolicy: "",
+      };
     }
 
-    return content;
+    if (!content.privacyPolicy && content.servicePolicy) {
+      content.privacyPolicy = content.servicePolicy;
+      await content.save();
+    }
+
+    return {
+      _id: content._id,
+      aboutUs: content.aboutUs ?? "",
+      termsAndCondition: content.termsAndCondition ?? "",
+      privacyPolicy: content.privacyPolicy ?? "",
+      createdAt: content.createdAt,
+      updatedAt: content.updatedAt,
+    };
+  };
+
+  getContent = async () => {
+    const rawContent = await this.commonRepo.getContent();
+    return await this.normalizeContent(rawContent);
   };
 
   createContent = async (body: createCommonType) => {
@@ -26,10 +46,40 @@ export class CommonService {
       );
     }
 
-    return await this.commonRepo.createContent(body);
+    const content = await this.commonRepo.createContent(body);
+    return await this.normalizeContent(content);
   };
 
   updateContent = async (body: updateCommonType) => {
-    return await this.commonRepo.updateContent(body);
+    const existingContent = await this.commonRepo.getContent();
+
+    if (!existingContent) {
+      if (
+        !body.aboutUs ||
+        !body.termsAndCondition ||
+        !body.privacyPolicy
+      ) {
+        throw new apiError(
+          HttpCodes.BadRequest,
+          "Common content does not exist yet. Use POST /common or provide all required fields."
+        );
+      }
+
+      const content = await this.commonRepo.createContent(body as createCommonType);
+      return await this.normalizeContent(content);
+    }
+
+    const normalizedBody = { ...body };
+
+    if (
+      !normalizedBody.privacyPolicy &&
+      existingContent.servicePolicy &&
+      !existingContent.privacyPolicy
+    ) {
+      normalizedBody.privacyPolicy = existingContent.servicePolicy;
+    }
+
+    const content = await this.commonRepo.updateContent(normalizedBody);
+    return await this.normalizeContent(content);
   };
 }

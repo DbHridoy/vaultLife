@@ -2,6 +2,6 @@ export const HttpCodes = {
   Ok: 200,
   Created:201,
   BadRequest: 400,
-  Unauthorized:402,
+  Unauthorized:401,
   NotFound:404,
 };

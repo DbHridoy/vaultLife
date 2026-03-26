@@ -12,9 +12,14 @@ const commonSchema = new Schema(
       required: true,
       trim: true,
     },
-    servicePolicy: {
+    privacyPolicy: {
       type: String,
       required: true,
+      trim: true,
+    },
+    // Backward compatibility for older records before the field rename.
+    servicePolicy: {
+      type: String,
       trim: true,
     },
   },

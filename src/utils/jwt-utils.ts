@@ -17,7 +17,7 @@ export class JwtUtils {
   };
 
   verifyAccessToken = async (token: string): Promise<JwtPayload | string> => {
-    logger.info({token},"Access token from utils")
+    // logger.info({token},"Access token from utils")
     return jwt.verify(token, this.accessSecret);
   };
 

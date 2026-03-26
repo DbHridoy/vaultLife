@@ -6,6 +6,6 @@ export const requestLogger = (
   res: Response,
   next: NextFunction
 ) => {
-  logger.info(`${req.method} ${req.originalUrl.slice(7)}`);
+  logger.info(`${req.method} ${req.originalUrl}`);
   next();
 };

@@ -20,3 +20,17 @@ export const loginUserSchema = z.object({
     message: "Password must be at least 6 characters long",
 });
 
+export const enableBiometricSchema = z.object({
+    deviceId: z.string().trim().min(1),
+    deviceName: z.string().trim().min(1).optional(),
+});
+
+export const biometricLoginSchema = z.object({
+    email: z.email(),
+    deviceId: z.string().trim().min(1),
+    biometricToken: z.string().trim().min(1),
+});
+
+export const disableBiometricSchema = z.object({
+    deviceId: z.string().trim().min(1),
+});

@@ -2,9 +2,15 @@ import { logger } from "../../utils/logger";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { AuthRepository } from "./auth.repository";
 import {UserRepository} from "../user/user.repository";
-import { RegisterUserType } from "./auth.type";
+import {
+  DisableBiometricType,
+  RegisterUserType,
+  EnableBiometricType,
+  BiometricLoginType,
+} from "./auth.type";
 import { HashUtils } from "../../utils/hash-utils";
 import { JwtUtils } from "../../utils/jwt-utils";
 import { Mailer } from "../../utils/mailer-utils";
@@ -24,7 +30,7 @@ export class AuthService {
       );
     }
     const hashedPassword = await this.hashUtils.hashPassword(userBody.password);
-    logger.info({ hashedPassword }, "HashedPassword");
+    // logger.info({ hashedPassword }, "HashedPassword");
 
     const user = {
       ...userBody,
@@ -32,7 +38,7 @@ export class AuthService {
       password: hashedPassword,
     };
 
-    logger.info({ user }, "user");
+    // logger.info({ user }, "user");
 
     const newUser = await this.userRepo.createUser(user);
     return newUser;
@@ -40,7 +46,7 @@ export class AuthService {
 
   loginUser = async (email: string, password: string) => {
     const user = await this.userRepo.findUserByEmail(email);
-    logger.info({ user }, "User from service");
+    // logger.info({ user }, "User from service");
     if (!user) {
       throw new apiError(Errors.NotFound.code, 'User not found');
     }
@@ -50,7 +56,7 @@ export class AuthService {
     }
 
     const isVerified = bcrypt.compareSync(password, user.password);
-    logger.info({isVerified}, "isVerified");
+    // logger.info({isVerified}, "isVerified");
     if (!isVerified) {
       throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
     }
@@ -74,6 +80,104 @@ export class AuthService {
       user,
       accessToken,
       refreshToken,
+    };
+  };
+
+  private issueTokens = async (user: any) => {
+    const payload = {
+      userId: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    };
+
+    const accessToken = await this.jwtUtils.generateAccessToken(payload);
+    const refreshToken = await this.jwtUtils.generateRefreshToken(payload);
+
+    return {
+      user,
+      accessToken,
+      refreshToken,
+    };
+  };
+
+  enableBiometricLogin = async (
+    userId: string,
+    body: EnableBiometricType
+  ) => {
+    const user = await this.userRepo.findUserById(userId);
+
+    if (!user) {
+      throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+    }
+
+    const biometricToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = await this.hashUtils.hashPassword(biometricToken);
+
+    await this.userRepo.upsertBiometricCredential(userId, {
+      deviceId: body.deviceId,
+      deviceName: body.deviceName,
+      tokenHash,
+    });
+
+    return {
+      biometricToken,
+      deviceId: body.deviceId,
+      deviceName: body.deviceName,
+    };
+  };
+
+  biometricLogin = async (body: BiometricLoginType) => {
+    const biometricRecord = await this.userRepo.findBiometricCredential(
+      body.email,
+      body.deviceId
+    );
+
+    if (!biometricRecord) {
+      throw new apiError(
+        Errors.Unauthorized.code,
+        "Biometric login is not enabled for this device"
+      );
+    }
+
+    const isValidToken = await this.hashUtils.verifyPassword(
+      body.biometricToken,
+      biometricRecord.credential.tokenHash
+    );
+
+    if (!isValidToken) {
+      throw new apiError(
+        Errors.Unauthorized.code,
+        "Invalid biometric credentials"
+      );
+    }
+
+    await this.userRepo.touchBiometricCredential(
+      biometricRecord.user._id.toString(),
+      body.deviceId
+    );
+
+    return await this.issueTokens(biometricRecord.user);
+  };
+
+  disableBiometricLogin = async (
+    userId: string,
+    body: DisableBiometricType
+  ) => {
+    const updatedUser = await this.userRepo.disableBiometricCredential(
+      userId,
+      body.deviceId
+    );
+
+    if (!updatedUser) {
+      throw new apiError(
+        Errors.NotFound.code,
+        "Biometric login device not found"
+      );
+    }
+
+    return {
+      deviceId: body.deviceId,
     };
   };
 
@@ -104,7 +208,7 @@ export class AuthService {
   }
 
   async verifyOtp(email: string, otp: string) {
-    logger.info(`from service layer - email: ${email}, otp: ${otp}`);
+    // logger.info(`from service layer - email: ${email}, otp: ${otp}`);
     const record = await this.authRepo.matchOtp(email, Number(otp));
     if (!record) {
       return { success: false, message: "Invalid OTP" };
@@ -121,9 +225,9 @@ export class AuthService {
   }
 
   async setNewPassword(email: string, newPassword: string) {
-    logger.info(
-      `from service layer - email: ${email}, newPassword: ${newPassword}`
-    );
+    // logger.info(
+    //   `from service layer - email: ${email}, newPassword: ${newPassword}`
+    // );
     // Find user by email
     const user = await this.userRepo.findUserByEmail(email);
     if (!user) {

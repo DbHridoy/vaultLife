@@ -47,6 +47,10 @@ export const uploadFile = ({
         const protocol = req.protocol;
         const host = req.get("host");
         req.file.fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+        req.body = {
+          ...req.body,
+          profileImage: req.file.fileUrl,
+        };
       }
 
       // attach fileUrl dynamically for multiple files

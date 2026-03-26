@@ -51,6 +51,7 @@ export class UserRepository {
   updateProfile = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
   };
+
   getSalesReps = async (query: any) => {
     const { filter, search, options } = this.buildDynamicSearch(User, query);
 
@@ -68,9 +69,11 @@ export class UserRepository {
 
     return { data: salesReps, total };
   };
+
   updateUser = async (id: string, body: any) => {
     return await User.findByIdAndUpdate(id, body, { new: true });
   };
+  
   updateNotificationPreferences = async (
     id: string,
     preferences: {
@@ -89,6 +92,94 @@ export class UserRepository {
         ...(preferences.pushNotificationToken !== undefined
           ? { pushNotificationToken: preferences.pushNotificationToken }
           : {}),
+      },
+      { new: true }
+    );
+  };
+
+  upsertBiometricCredential = async (
+    userId: string,
+    credential: {
+      deviceId: string;
+      deviceName?: string;
+      tokenHash: string;
+    }
+  ) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
+    }
+
+    const existingCredential = user.biometricCredentials?.find(
+      (item: { deviceId: string }) => item.deviceId === credential.deviceId
+    );
+
+    if (existingCredential) {
+      existingCredential.deviceName = credential.deviceName;
+      existingCredential.tokenHash = credential.tokenHash;
+      existingCredential.enabled = true;
+      existingCredential.lastUsedAt = new Date();
+    } else {
+      user.biometricCredentials.push({
+        ...credential,
+        enabled: true,
+        lastUsedAt: new Date(),
+      });
+    }
+
+    await user.save();
+    return user;
+  };
+
+  findBiometricCredential = async (email: string, deviceId: string) => {
+    const user = await User.findOne({
+      email,
+      biometricCredentials: {
+        $elemMatch: {
+          deviceId,
+          enabled: true,
+        },
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const credential = user.biometricCredentials.find(
+      (item: { deviceId: string; enabled: boolean }) =>
+        item.deviceId === deviceId && item.enabled
+    );
+
+    if (!credential) {
+      return null;
+    }
+
+    return {
+      user,
+      credential,
+    };
+  };
+
+  disableBiometricCredential = async (userId: string, deviceId: string) => {
+    return await User.findOneAndUpdate(
+      { _id: userId, "biometricCredentials.deviceId": deviceId },
+      {
+        $set: {
+          "biometricCredentials.$.enabled": false,
+        },
+      },
+      { new: true }
+    );
+  };
+
+  touchBiometricCredential = async (userId: string, deviceId: string) => {
+    return await User.findOneAndUpdate(
+      { _id: userId, "biometricCredentials.deviceId": deviceId },
+      {
+        $set: {
+          "biometricCredentials.$.lastUsedAt": new Date(),
+        },
       },
       { new: true }
     );

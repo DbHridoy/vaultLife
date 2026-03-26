@@ -8,7 +8,7 @@ export class CommonRepository {
   createContent = async (body: {
     aboutUs: string;
     termsAndCondition: string;
-    servicePolicy: string;
+    privacyPolicy: string;
   }) => {
     const content = new Common(body);
     return await content.save();
@@ -17,7 +17,7 @@ export class CommonRepository {
   updateContent = async (body: {
     aboutUs?: string;
     termsAndCondition?: string;
-    servicePolicy?: string;
+    privacyPolicy?: string;
   }) => {
     return await Common.findOneAndUpdate({}, body, {
       new: true,

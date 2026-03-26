@@ -1,13 +1,14 @@
 import { UserRepository } from "./user.repository";
-import { logger } from "../../utils/logger";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
-import { createUserType } from "./user.type";
-import { hashUtils } from "../../container";
-import { mailer } from "../../container";
 import { HashUtils } from "../../utils/hash-utils";
 import { Mailer } from "../../utils/mailer-utils";
-import { Roles, Role } from "../../constants/roles";
+import {
+  createUserType,
+  updateOtherRoleUserType,
+  updateOwnProfileType,
+} from "./user.type";
+import { Roles } from "../../constants/roles";
 
 export class UserService {
   constructor(
@@ -15,15 +16,40 @@ export class UserService {
     private hashUtils: HashUtils,
     private mailer: Mailer
   ) {}
+
+  private buildUserUpdatePayload = (
+    body: Partial<updateOwnProfileType> & { profileImage?: string }
+  ) => {
+    const updatePayload = {
+      ...(body.fullName !== undefined ? { fullName: body.fullName } : {}),
+      ...(body.phoneNumber !== undefined ? { phoneNumber: body.phoneNumber } : {}),
+      ...(body.address !== undefined ? { address: body.address } : {}),
+      ...(body.country !== undefined ? { country: body.country } : {}),
+      ...(body.dateOfBirth !== undefined ? { dateOfBirth: body.dateOfBirth } : {}),
+      ...(body.profileImage !== undefined ? { profileImage: body.profileImage } : {}),
+    };
+
+    if (Object.keys(updatePayload).length === 0) {
+      throw new apiError(Errors.NotFound.code, "No valid profile fields provided");
+    }
+
+    return updatePayload;
+  };
+
   getUserProfile = async (id: string) => {
     return await this.userRepo.findUserById(id);
   };
-  updateProfile = async (id: string, body: any) => {
-    return await this.userRepo.updateProfile(id, body);
+  updateProfile = async (id: string, body: updateOwnProfileType & { profileImage?: string }) => {
+    const updatePayload = this.buildUserUpdatePayload(body);
+    return await this.userRepo.updateProfile(id, updatePayload);
   };
-updateUser=async(id:string,body:any)=>{
-  return await this.userRepo.updateUser(id,body)
-}
+  updateUser = async (
+    id: string,
+    body: updateOtherRoleUserType & { profileImage?: string }
+  ) => {
+    const updatePayload = this.buildUserUpdatePayload(body);
+    return await this.userRepo.updateUser(id, updatePayload);
+  };
   createUser = async (
     actor: { userId: string; role: string },
     userBody: createUserType
@@ -59,18 +85,18 @@ updateUser=async(id:string,body:any)=>{
 
     return newUser;
   };
-  getAllUsers=async(query:any)=>{
-    return await this.userRepo.getAllUsers(query)
-  }
-  getUserById=async(id:string)=>{
-    return await this.userRepo.findUserById(id)
-  }
-  getSalesReps=async(query:any)=>{
-    return await this.userRepo.getSalesReps(query)
-  }
-  deleteUser=async(id:string)=>{
-    return await this.userRepo.deleteUser(id)
-  }
+  getAllUsers = async (query: any) => {
+    return await this.userRepo.getAllUsers(query);
+  };
+  getUserById = async (id: string) => {
+    return await this.userRepo.findUserById(id);
+  };
+  getSalesReps = async (query: any) => {
+    return await this.userRepo.getSalesReps(query);
+  };
+  deleteUser = async (id: string) => {
+    return await this.userRepo.deleteUser(id);
+  };
   updateNotificationPreferences = async (
     id: string,
     preferences: {

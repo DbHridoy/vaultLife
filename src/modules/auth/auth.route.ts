@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
-import { loginUserSchema, registerUserSchema } from "./auth.schema";
-import { authController } from "../../container";
+import {
+  biometricLoginSchema,
+  disableBiometricSchema,
+  enableBiometricSchema,
+  loginUserSchema,
+  registerUserSchema,
+} from "./auth.schema";
+import { authController, authMiddleware } from "../../container";
 
 const authRoute = Router();
 
@@ -14,6 +20,23 @@ authRoute.post(
 );
 
 authRoute.post("/login", validate(loginUserSchema), authController.loginUser);
+authRoute.post(
+  "/biometric/enable",
+  authMiddleware.authenticate,
+  validate(enableBiometricSchema),
+  authController.enableBiometricLogin
+);
+authRoute.post(
+  "/biometric/login",
+  validate(biometricLoginSchema),
+  authController.biometricLogin
+);
+authRoute.post(
+  "/biometric/disable",
+  authMiddleware.authenticate,
+  validate(disableBiometricSchema),
+  authController.disableBiometricLogin
+);
 
 authRoute.post("/send-otp", authController.sendOtp);
 authRoute.post("/verify-otp", authController.verifyOtp);

@@ -12,6 +12,7 @@ import {
 } from "../../types/request.type";
 import { createUserType } from "./user.type";
 import { updateNotificationPreferencesType } from "./user.type";
+import { updateOwnProfileType } from "./user.type";
 
 export class UserController {
   constructor(private userService: UserService) {}
@@ -25,7 +26,7 @@ export class UserController {
       if (!req.user?.userId || !req.user.role) {
         throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
       }
-      logger.info({ user: req.user, body }, "Creating user");
+      // logger.info({ user: req.user, body }, "Creating user");
       const user = await this.userService.createUser(req.user, body);
       res.status(HttpCodes.Ok).json({
         success: true,
@@ -93,19 +94,24 @@ export class UserController {
   );
   updateUser = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const {id}=req.params
-      const body=req.body
-      const user=await this.userService.updateUser(id,body)
+      const { id } = req.params;
+      const body = req.body;
+
+      if (req.file) {
+        body.profileImage = req.file.fileUrl;
+      }
+
+      const user = await this.userService.updateUser(id, body);
       res.status(HttpCodes.Ok).json({
-        success:true,
-        message:"User updated successfully",
-        data:user
-      })
+        success: true,
+        message: "User updated successfully",
+        data: user,
+      });
     }
   );
   updateProfile = asyncHandler(
     async (
-      req: TypedRequestBodyWithFile<updateOtherRoleUserType>,
+      req: TypedRequestBodyWithFile<updateOwnProfileType>,
       res: Response,
       next: NextFunction
     ) => {
@@ -121,9 +127,9 @@ export class UserController {
         body.profileImage = req.file.fileUrl;
       }
 
-      logger.info({body},"UserController.updateProfile")
+      // logger.info({body},"UserController.updateProfile")
 
-      logger.info({ user: req.user, body }, "Updating user profile");
+      // logger.info({ user: req.user, body }, "Updating user profile");
 
       const updatedUser = await this.userService.updateProfile(userId, body);
 

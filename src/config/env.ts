@@ -1,5 +1,6 @@
 import z from "zod";
 import dotenv from "dotenv";
+import { roleValues } from "../constants/roles";
 dotenv.config();
 
 const envSchema = z.object({
@@ -27,6 +28,11 @@ const envSchema = z.object({
   AWS_ACCESS_KEY: z.string().optional(),
   AWS_SECRET_KEY: z.string().optional(),
   S3_BUCKET_NAME: z.string().optional(),
+  SEED_ADMIN_ON_STARTUP: z.coerce.boolean().default(true),
+  SEED_ADMIN_FULL_NAME: z.string().default("Super Admin"),
+  SEED_ADMIN_EMAIL: z.string().optional(),
+  SEED_ADMIN_PASSWORD: z.string().optional(),
+  SEED_ADMIN_ROLE: z.enum(roleValues).default("superadmin"),
 });
 
 export const env = envSchema.parse(process.env);
