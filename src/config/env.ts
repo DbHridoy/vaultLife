@@ -22,12 +22,18 @@ const envSchema = z.object({
 
   GMAIL_USER: z.string().optional(),
   GMAIL_PASS: z.string().optional(),
+  EXPO_ACCESS_TOKEN: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
 
   GEMINI_API_KEY: z.string().optional(),
   S3_BUCKET_REGION: z.string().optional(),
   AWS_ACCESS_KEY: z.string().optional(),
   AWS_SECRET_KEY: z.string().optional(),
   S3_BUCKET_NAME: z.string().optional(),
+  ENABLE_REMINDER_SCHEDULER: z.coerce.boolean().default(true),
+  REMINDER_SCHEDULER_INTERVAL_MS: z.coerce.number().default(60000),
   SEED_ADMIN_ON_STARTUP: z.coerce.boolean().default(true),
   SEED_ADMIN_FULL_NAME: z.string().default("Super Admin"),
   SEED_ADMIN_EMAIL: z.string().optional(),

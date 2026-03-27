@@ -1,6 +1,26 @@
 import z from "zod";
 import { roleValues } from "../../constants/roles";
 
+const booleanFromFormData = z.preprocess((value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalizedValue = value.trim().toLowerCase();
+
+    if (normalizedValue === "true") {
+      return true;
+    }
+
+    if (normalizedValue === "false") {
+      return false;
+    }
+  }
+
+  return value;
+}, z.boolean());
+
 const UserSchema = z.object({
   fullName: z.string(),
   email:z.email(),
@@ -29,6 +49,12 @@ export const UpdateUserSchemaForOtherRoles = UserProfileFieldsSchema.refine(
     message: "At least one field is required",
   }
 );
+
+export const AdminUpdateUserSchema = UserProfileFieldsSchema.extend({
+  isBlocked: booleanFromFormData.optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: "At least one field is required",
+});
 
 export const UpdateOwnProfileSchema = UserProfileFieldsSchema
   .refine((data) => Object.keys(data).length > 0, {

@@ -1,13 +1,12 @@
 import { z } from "zod";
 
+const richTextHtmlSchema = z.string().min(1, "Content is required");
+
 const commonFieldSchema = z.object({
-  aboutUs: z.string().trim().min(1, "About us is required"),
-  termsAndCondition: z
-    .string()
-    .trim()
-    .min(1, "Terms and condition is required"),
-  privacyPolicy: z.string().trim().min(1, "Privacy policy is required").optional(),
-  servicePolicy: z.string().trim().min(1, "Privacy policy is required").optional(),
+  aboutUs: richTextHtmlSchema,
+  termsAndCondition: richTextHtmlSchema,
+  privacyPolicy: richTextHtmlSchema.optional(),
+  servicePolicy: richTextHtmlSchema.optional(),
 });
 
 export const CreateCommonSchema = commonFieldSchema

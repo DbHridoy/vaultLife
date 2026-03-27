@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
 import {
   biometricLoginSchema,
+  changePasswordSchema,
   disableBiometricSchema,
   enableBiometricSchema,
   loginUserSchema,
@@ -41,6 +42,12 @@ authRoute.post(
 authRoute.post("/send-otp", authController.sendOtp);
 authRoute.post("/verify-otp", authController.verifyOtp);
 authRoute.post("/set-new-password", authController.setNewPassword);
+authRoute.post(
+  "/change-password",
+  authMiddleware.authenticate,
+  validate(changePasswordSchema),
+  authController.changePassword
+);
 authRoute.post("/refresh-token", authController.refreshToken);
 authRoute.post("/logout", authController.logout);
 

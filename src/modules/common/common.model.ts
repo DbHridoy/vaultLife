@@ -3,24 +3,20 @@ import { Schema, model } from "mongoose";
 const commonSchema = new Schema(
   {
     aboutUs: {
-      type: String,
+      type: Schema.Types.Mixed,
       required: true,
-      trim: true,
     },
     termsAndCondition: {
-      type: String,
+      type: Schema.Types.Mixed,
       required: true,
-      trim: true,
     },
     privacyPolicy: {
-      type: String,
+      type: Schema.Types.Mixed,
       required: true,
-      trim: true,
     },
     // Backward compatibility for older records before the field rename.
     servicePolicy: {
-      type: String,
-      trim: true,
+      type: Schema.Types.Mixed,
     },
   },
   {

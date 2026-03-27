@@ -38,6 +38,9 @@ constructor(private jwtUtils:JwtUtils,private authRepo:UserRepository){
       if (!user) {
         throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
       }
+      if (user.isBlocked) {
+        throw new apiError(Errors.Forbidden.code, "User account is blocked");
+      }
 
       req.user = {
         userId: payload.userId,

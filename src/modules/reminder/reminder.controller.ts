@@ -38,7 +38,9 @@ export class ReminderController {
         throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
       }
 
-      const reminders = await this.reminderService.getUserReminders(userId);
+      const filter =
+        typeof req.query.filter === "string" ? req.query.filter : "all";
+      const reminders = await this.reminderService.getUserReminders(userId, filter);
 
       res.status(HttpCodes.Ok).json({
         success: true,

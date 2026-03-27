@@ -36,6 +36,35 @@ export class UserService {
     return updatePayload;
   };
 
+  private buildAdminUserUpdatePayload = (
+    body: Partial<updateOtherRoleUserType> & { profileImage?: string }
+  ) => {
+    const profilePayload = {
+      ...(body.fullName !== undefined ? { fullName: body.fullName } : {}),
+      ...(body.phoneNumber !== undefined ? { phoneNumber: body.phoneNumber } : {}),
+      ...(body.address !== undefined ? { address: body.address } : {}),
+      ...(body.country !== undefined ? { country: body.country } : {}),
+      ...(body.dateOfBirth !== undefined ? { dateOfBirth: body.dateOfBirth } : {}),
+      ...(body.profileImage !== undefined ? { profileImage: body.profileImage } : {}),
+    };
+
+    const updatePayload = {
+      ...profilePayload,
+      ...(body.isBlocked !== undefined
+        ? {
+            isBlocked: body.isBlocked,
+            blockedAt: body.isBlocked ? new Date() : null,
+          }
+        : {}),
+    };
+
+    if (Object.keys(updatePayload).length === 0) {
+      throw new apiError(Errors.NotFound.code, "No valid user fields provided");
+    }
+
+    return updatePayload;
+  };
+
   getUserProfile = async (id: string) => {
     return await this.userRepo.findUserById(id);
   };
@@ -47,7 +76,7 @@ export class UserService {
     id: string,
     body: updateOtherRoleUserType & { profileImage?: string }
   ) => {
-    const updatePayload = this.buildUserUpdatePayload(body);
+    const updatePayload = this.buildAdminUserUpdatePayload(body);
     return await this.userRepo.updateUser(id, updatePayload);
   };
   createUser = async (
@@ -85,7 +114,7 @@ export class UserService {
 
     return newUser;
   };
-  getAllUsers = async (query: any) => {
+  getAllUsers = async (query: Record<string, unknown>) => {
     return await this.userRepo.getAllUsers(query);
   };
   getUserById = async (id: string) => {

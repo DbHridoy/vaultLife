@@ -38,6 +38,10 @@
       "value": ""
     },
     {
+      "key": "documentDraftId",
+      "value": ""
+    },
+    {
       "key": "reminderId",
       "value": ""
     },
@@ -401,6 +405,37 @@
           "response": []
         },
         {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{userPassword}}\",\n  \"newPassword\": \"{{newPassword}}\",\n  \"confirmPassword\": \"{{newPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Refresh Token",
           "event": [
             {
@@ -566,6 +601,42 @@
           "response": []
         },
         {
+          "name": "Get User Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user?metrics=true&period=year&year=2026",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user"
+              ],
+              "query": [
+                {
+                  "key": "metrics",
+                  "value": "true"
+                },
+                {
+                  "key": "period",
+                  "value": "year"
+                },
+                {
+                  "key": "year",
+                  "value": "2026"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Get My Profile",
           "request": {
             "method": "GET",
@@ -660,7 +731,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"pushNotificationToken\": \"expo-device-token-or-fcm-token\"\n}"
+              "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"pushNotificationToken\": \"ExpoPushToken[xxxxxxxxxxxxxxxxxxxxxx]\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/user/me/notification-preferences",
@@ -702,6 +773,16 @@
                 {
                   "key": "address",
                   "value": "Dhaka, Bangladesh",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "Bangladesh",
+                  "type": "text"
+                },
+                {
+                  "key": "dateOfBirth",
+                  "value": "1995-08-15",
                   "type": "text"
                 },
                 {
@@ -748,9 +829,80 @@
                   "type": "text"
                 },
                 {
+                  "key": "isBlocked",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
                   "key": "profileImage",
                   "type": "file",
                   "src": "{{profileImageFile}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "isBlocked",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "isBlocked",
+                  "value": "false",
+                  "type": "text"
                 }
               ]
             },
@@ -828,7 +980,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"aboutUs\": \"About us content\",\n  \"termsAndCondition\": \"Terms and condition content\",\n  \"privacyPolicy\": \"Privacy policy content\"\n}"
+              "raw": "{\n  \"aboutUs\": \"<h2>About Us</h2><p>We help users manage important documents.</p>\",\n  \"termsAndCondition\": \"<h2>Terms and Conditions</h2><p>By using this service, you agree to the following terms.</p>\",\n  \"privacyPolicy\": \"<h2>Privacy Policy</h2><p>We collect only the information needed to provide the service.</p>\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/common",
@@ -858,7 +1010,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"aboutUs\": \"Updated about us content\"\n}"
+              "raw": "{\n  \"aboutUs\": \"<h2>Updated About Us</h2><p>This section now supports rich text content.</p>\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/common",
@@ -878,7 +1030,7 @@
       "name": "Documents",
       "item": [
         {
-          "name": "Upload Document",
+          "name": "Upload Document For Analysis",
           "event": [
             {
               "listen": "test",
@@ -886,8 +1038,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "const json = pm.response.json();",
-                  "const documentId = json?.data?._id || json?.data?.id || json?._id;",
-                  "if (documentId) pm.collectionVariables.set('documentId', documentId);"
+                  "const draftId = json?.data?.draftId;",
+                  "if (draftId) pm.collectionVariables.set('documentDraftId', draftId);"
                 ]
               }
             }
@@ -918,6 +1070,50 @@
               "path": [
                 "document",
                 "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Document Save",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const documentId = json?.data?._id || json?.data?.id || json?._id;",
+                  "if (documentId) pm.collectionVariables.set('documentId', documentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"draftId\": \"{{documentDraftId}}\",\n  \"title\": \"John Doe Passport\",\n  \"documentCategory\": \"passport\",\n  \"extractedData\": {\n    \"documentNumber\": \"A12345678\",\n    \"surname\": \"Doe\",\n    \"givenNames\": \"John\",\n    \"nationality\": \"Bangladeshi\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/document/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document",
+                "confirm"
               ]
             }
           },
@@ -1002,7 +1198,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"message\": \"Your document expires soon\"\n}"
+              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"message\": \"Your document expires soon\",\n  \"recurrence\": \"monthly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": false\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reminder",
@@ -1027,13 +1223,77 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/reminder/me",
+              "raw": "{{baseUrl}}/reminder/me?filter=all",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "reminder",
                 "me"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "all"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Upcoming Reminders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminder/me?filter=upcoming",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "upcoming"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Overdue Reminders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reminder/me?filter=overdue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reminder",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "filter",
+                  "value": "overdue"
+                }
               ]
             }
           },
@@ -1055,7 +1315,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"message\": \"Updated reminder message\",\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"message\": \"Updated reminder message\",\n  \"status\": \"pending\",\n  \"recurrence\": \"yearly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reminder/{{reminderId}}",

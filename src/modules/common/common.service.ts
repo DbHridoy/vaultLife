@@ -7,12 +7,14 @@ import { createCommonType, updateCommonType } from "./common.type";
 export class CommonService {
   constructor(private commonRepo: CommonRepository) {}
 
+  private emptyRichTextValue = "";
+
   private normalizeContent = async (content: any) => {
     if (!content) {
       return {
-        aboutUs: "",
-        termsAndCondition: "",
-        privacyPolicy: "",
+        aboutUs: this.emptyRichTextValue,
+        termsAndCondition: this.emptyRichTextValue,
+        privacyPolicy: this.emptyRichTextValue,
       };
     }
 
@@ -23,9 +25,9 @@ export class CommonService {
 
     return {
       _id: content._id,
-      aboutUs: content.aboutUs ?? "",
-      termsAndCondition: content.termsAndCondition ?? "",
-      privacyPolicy: content.privacyPolicy ?? "",
+      aboutUs: content.aboutUs ?? this.emptyRichTextValue,
+      termsAndCondition: content.termsAndCondition ?? this.emptyRichTextValue,
+      privacyPolicy: content.privacyPolicy ?? this.emptyRichTextValue,
       createdAt: content.createdAt,
       updatedAt: content.updatedAt,
     };

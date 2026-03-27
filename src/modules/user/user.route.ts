@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { validate } from "../../middlewares/validate.middleware";
 import {
+  AdminUpdateUserSchema,
   CreateUserSchema,
   UpdateNotificationPreferencesSchema,
   UpdateOwnProfileSchema,
-  UpdateUserSchemaForOtherRoles,
 } from "./user.schema";
 import { uploadFile } from "../../middlewares/uploadLocal.middleware";
 import { authMiddleware, userController } from "../../container";
@@ -67,7 +67,7 @@ userRoute.patch(
     fieldName: "profileImage",
     uploadType: "single",
   }),
-  validate(UpdateUserSchemaForOtherRoles),
+  validate(AdminUpdateUserSchema),
   userController.updateUser // 4️⃣ controller
 );
 

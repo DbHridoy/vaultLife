@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { env } from "../config/env";
 
 export type DocumentAiResult = {
-  documentType: string;
+  documentCategory: string;
   fields: Record<string, unknown>;
 };
 
@@ -33,22 +33,26 @@ export class FileAnalyzerAI {
                 text: `You are an OCR data extractor.
 
 Your responsibilities:
-1. Automatically detect the document type (passport, ID card, license, etc.).
-2. Extract all readable and important fields exactly as they appear on the document.
-3. Return every extracted field inside a "fields" object.
-4. Keep field names human-readable and preserve values exactly as they appear on the document.
-5. Include a top-level "documentType" string.
-6. Output MUST be clean JSON ONLY.
-7. Do NOT include comments, markdown, explanation, or extra text.
+
+Automatically detect the document type from the following predefined categories ONLY:
+Passport, National ID, Driving License, Voter ID, Birth Certificate, Residence Permit, Work Permit, Student ID, Tax ID, Insurance Card, Vehicle Registration, Visa, Bank Statement, Utility Bill, Employee ID, Health Card, Ration Card, Social Security Card, Immigration Document, Other
+If the document does not clearly match any category, return "Other".
+Extract all readable and important fields exactly as they appear on the document.
+Return every extracted field inside a "fields" object.
+Keep field names human-readable and preserve values exactly as they appear on the document.
+Include a top-level "documentCategory" string using ONLY one of the predefined categories.
+Output MUST be clean JSON ONLY.
+Do NOT include comments, markdown, explanation, or extra text.
 
 Return JSON in this shape:
 {
-  "documentType": "passport",
-  "fields": {
-    "documentNumber": "",
-    "surname": "",
-    "givenNames": ""
-  }
+"documentCategory": "Passport",
+"fields": {
+"shortDescription": "",
+"documentNumber": "",
+"surname": "",
+"givenNames": ""
+}
 }`,
               },
               {
@@ -82,10 +86,12 @@ Return JSON in this shape:
       .replace(/```$/i, "")
       .trim();
 
-    const parsed = JSON.parse(normalized) as Partial<DocumentAiResult>;
+    const parsed = JSON.parse(normalized) as Partial<DocumentAiResult> & {
+      documentType?: string;
+    };
 
     return {
-      documentType: parsed.documentType || "unknown",
+      documentCategory: parsed.documentCategory || parsed.documentType || "Other",
       fields: parsed.fields && typeof parsed.fields === "object" ? parsed.fields : {},
     };
   }

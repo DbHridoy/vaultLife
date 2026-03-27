@@ -39,6 +39,16 @@ export class UserController {
     async (req: Request, res: Response, next: NextFunction) => {
       const query = req.query;
       const users = await this.userService.getAllUsers(query);
+
+      if (users.type === "metrics") {
+        res.status(HttpCodes.Ok).json({
+          success: true,
+          message: "User metrics fetched successfully",
+          data: users.data,
+        });
+        return;
+      }
+
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "All users fetched successfully",

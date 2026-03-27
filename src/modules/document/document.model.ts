@@ -7,6 +7,11 @@ const documentSchema = new Schema(
       required: true,
       trim: true,
     },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     mimeType: {
       type: String,
       required: true,
@@ -26,7 +31,7 @@ const documentSchema = new Schema(
       required: true,
       trim: true,
     },
-    documentType: {
+    documentCategory: {
       type: String,
       required: true,
       trim: true,

@@ -10,6 +10,7 @@ import {
   RegisterUserType,
   EnableBiometricType,
   BiometricLoginType,
+  ChangePasswordType,
 } from "./auth.type";
 import { HashUtils } from "../../utils/hash-utils";
 import { JwtUtils } from "../../utils/jwt-utils";
@@ -19,6 +20,12 @@ import { Roles } from "../../constants/roles";
 export class AuthService {
 
   constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer) {}
+
+  private ensureUserIsNotBlocked = (user: { isBlocked?: boolean }) => {
+    if (user.isBlocked) {
+      throw new apiError(Errors.Forbidden.code, "User account is blocked");
+    }
+  };
 
   registerUser = async (userBody: RegisterUserType) => {
     const existingUser = await this.userRepo.findUserByEmail(userBody.email);
@@ -50,6 +57,8 @@ export class AuthService {
     if (!user) {
       throw new apiError(Errors.NotFound.code, 'User not found');
     }
+
+    this.ensureUserIsNotBlocked(user);
 
     if (user.twoFactorEnabled) {
       throw new apiError(Errors.Unauthorized.code, 'Two factor authentication is enabled');
@@ -84,6 +93,8 @@ export class AuthService {
   };
 
   private issueTokens = async (user: any) => {
+    this.ensureUserIsNotBlocked(user);
+
     const payload = {
       userId: user._id,
       fullName: user.fullName,
@@ -243,6 +254,30 @@ export class AuthService {
     return { success: true, message: "Password updated successfully" };
   }
 
+  async changePassword(userId: string, body: ChangePasswordType) {
+    const user = await this.userRepo.findUserById(userId);
+
+    if (!user) {
+      throw new apiError(Errors.NotFound.code, "User not found");
+    }
+
+    this.ensureUserIsNotBlocked(user);
+
+    const isCurrentPasswordValid = await this.hashUtils.verifyPassword(
+      body.currentPassword,
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new apiError(Errors.Unauthorized.code, "Current password is incorrect");
+    }
+
+    const hashedPassword = await this.hashUtils.hashPassword(body.newPassword);
+    await this.userRepo.updateUserPassword(user._id, hashedPassword);
+
+    return { success: true, message: "Password changed successfully" };
+  }
+
   async refreshToken(refreshToken: string) {
     const payload = await this.jwtUtils.verifyRefreshToken(refreshToken);
 
@@ -255,6 +290,8 @@ export class AuthService {
     if (!user) {
       throw new apiError(Errors.NotFound.code, Errors.NotFound.message);
     }
+
+    this.ensureUserIsNotBlocked(user);
 
     const tokenPayload = {
       userId: user._id,

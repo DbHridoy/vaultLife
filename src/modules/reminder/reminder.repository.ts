@@ -1,13 +1,28 @@
 import Reminder from "./reminder.model";
 
+type ReminderListFilter = "all" | "upcoming" | "overdue";
+
 export class ReminderRepository {
   createReminder = async (payload: Record<string, unknown>) => {
     const reminder = new Reminder(payload);
     return await reminder.save();
   };
 
-  getUserReminders = async (userId: string) => {
-    return await Reminder.find({ userId })
+  getUserReminders = async (userId: string, filter: ReminderListFilter = "all") => {
+    const now = new Date();
+    const query: Record<string, unknown> = { userId };
+
+    if (filter === "upcoming") {
+      query.status = "pending";
+      query.remindAt = { $gte: now };
+    }
+
+    if (filter === "overdue") {
+      query.status = "pending";
+      query.remindAt = { $lt: now };
+    }
+
+    return await Reminder.find(query)
       .populate("documentId")
       .sort({ remindAt: 1 });
   };
@@ -34,6 +49,18 @@ export class ReminderRepository {
       id,
       {
         status: "sent",
+        sentAt: new Date(),
+      },
+      { new: true }
+    );
+  };
+
+  rescheduleReminder = async (id: string, nextRemindAt: Date) => {
+    return await Reminder.findByIdAndUpdate(
+      id,
+      {
+        remindAt: nextRemindAt,
+        status: "pending",
         sentAt: new Date(),
       },
       { new: true }

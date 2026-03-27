@@ -5,6 +5,8 @@ import { HttpCodes } from "../../constants/status-codes";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { TypedRequestBodyWithFile } from "../../types/request.type";
+import { TypedRequestBody } from "../../types/request.type";
+import { confirmDocumentType } from "./document.type";
 
 export class DocumentController {
   constructor(private documentService: DocumentService) {}
@@ -22,9 +24,30 @@ export class DocumentController {
 
       const document = await this.documentService.uploadDocument(req.file, userId);
 
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Document analyzed successfully",
+        data: document,
+      });
+    }
+  );
+
+  confirmDocument = asyncHandler(
+    async (
+      req: TypedRequestBody<confirmDocumentType>,
+      res: Response,
+      _next: NextFunction
+    ) => {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new apiError(Errors.Unauthorized.code, "Unauthorized");
+      }
+
+      const document = await this.documentService.confirmDocument(req.body, userId);
+
       res.status(HttpCodes.Created).json({
         success: true,
-        message: "Document uploaded successfully",
+        message: "Document saved successfully",
         data: document,
       });
     }

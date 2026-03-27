@@ -51,6 +51,14 @@ const userSchema = new Schema(
       required: true,
       enum: roleValues,
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    blockedAt: {
+      type: Date,
+    },
     twoFactorEnabled: {
       type: Boolean,
       default: false,

@@ -4,6 +4,8 @@ import { ReminderRepository } from "./reminder.repository";
 import { DocumentRepository } from "../document/document.repository";
 import { createReminderType, updateReminderType } from "./reminder.type";
 
+type ReminderListFilter = "all" | "upcoming" | "overdue";
+
 export class ReminderService {
   constructor(
     private reminderRepository: ReminderRepository,
@@ -48,8 +50,21 @@ export class ReminderService {
     });
   };
 
-  getUserReminders = async (userId: string) => {
-    return await this.reminderRepository.getUserReminders(userId);
+  getUserReminders = async (userId: string, filter: string = "all") => {
+    const normalizedFilter = filter.toLowerCase();
+
+    if (
+      normalizedFilter !== "all" &&
+      normalizedFilter !== "upcoming" &&
+      normalizedFilter !== "overdue"
+    ) {
+      throw new apiError(400, "filter must be one of: all, upcoming, overdue");
+    }
+
+    return await this.reminderRepository.getUserReminders(
+      userId,
+      normalizedFilter as ReminderListFilter
+    );
   };
 
   updateReminder = async (

@@ -30,10 +30,49 @@ export class NotificationService {
     return "failed";
   }
 
+  private resolveRequestedChannels(
+    user: {
+      notificationPreferences?: { email?: boolean; push?: boolean } | null;
+    },
+    requestedChannels?: { email?: boolean; push?: boolean } | null
+  ) {
+    return {
+      email:
+        Boolean(user.notificationPreferences?.email) &&
+        (requestedChannels?.email ?? true),
+      push:
+        Boolean(user.notificationPreferences?.push) &&
+        (requestedChannels?.push ?? true),
+    };
+  }
+
+  private getNextReminderOccurrence(
+    remindAt: Date,
+    recurrence: "none" | "monthly" | "yearly" | null | undefined
+  ) {
+    if (!recurrence || recurrence === "none") {
+      return null;
+    }
+
+    const now = new Date();
+    const nextRemindAt = new Date(remindAt);
+
+    while (nextRemindAt <= now) {
+      if (recurrence === "monthly") {
+        nextRemindAt.setUTCMonth(nextRemindAt.getUTCMonth() + 1);
+      } else {
+        nextRemindAt.setUTCFullYear(nextRemindAt.getUTCFullYear() + 1);
+      }
+    }
+
+    return nextRemindAt;
+  }
+
   async sendNotificationToUser(
     userId: string,
     payload: createNotificationType,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
+    requestedChannels?: { email?: boolean; push?: boolean } | null
   ) {
     const user = await this.userRepository.findUserById(userId);
 
@@ -55,27 +94,32 @@ export class NotificationService {
       }
     }
 
-    const channelsRequested = {
-      email: Boolean(user.notificationPreferences?.email),
-      push: Boolean(user.notificationPreferences?.push),
-    };
+    const channelsRequested = this.resolveRequestedChannels(user, requestedChannels);
 
     let emailDelivered = false;
     let pushDelivered = false;
 
     if (channelsRequested.email && user.email) {
-      await this.mailer.sendNotification(user.email, payload.title, payload.message);
-      emailDelivered = true;
+      try {
+        await this.mailer.sendNotification(user.email, payload.title, payload.message);
+        emailDelivered = true;
+      } catch (_error) {
+        emailDelivered = false;
+      }
     }
 
     const pushToken = user.pushNotificationToken;
     if (channelsRequested.push && pushToken) {
-      await this.pushNotifier.sendPush(pushToken, payload.title, payload.message, {
-        documentId: payload.documentId,
-        reminderId: payload.reminderId,
-        ...metadata,
-      });
-      pushDelivered = true;
+      try {
+        await this.pushNotifier.sendPush(pushToken, payload.title, payload.message, {
+          documentId: payload.documentId,
+          reminderId: payload.reminderId,
+          ...metadata,
+        });
+        pushDelivered = true;
+      } catch (_error) {
+        pushDelivered = false;
+      }
     }
 
     const status = this.buildStatus(emailDelivered, pushDelivered);
@@ -125,10 +169,23 @@ export class NotificationService {
         },
         {
           remindAt: reminder.remindAt,
-        }
+        },
+        reminder.notificationChannels
       );
 
-      await this.reminderRepository.markReminderAsSent(reminder._id.toString());
+      const nextRemindAt = this.getNextReminderOccurrence(
+        reminder.remindAt,
+        reminder.recurrence
+      );
+
+      if (nextRemindAt) {
+        await this.reminderRepository.rescheduleReminder(
+          reminder._id.toString(),
+          nextRemindAt
+        );
+      } else {
+        await this.reminderRepository.markReminderAsSent(reminder._id.toString());
+      }
       results.push(notification);
     }
 

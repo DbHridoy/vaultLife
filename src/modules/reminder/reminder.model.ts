@@ -23,6 +23,21 @@ const reminderSchema = new Schema(
       type: String,
       trim: true,
     },
+    recurrence: {
+      type: String,
+      enum: ["none", "monthly", "yearly"],
+      default: "none",
+    },
+    notificationChannels: {
+      email: {
+        type: Boolean,
+        default: true,
+      },
+      push: {
+        type: Boolean,
+        default: true,
+      },
+    },
     status: {
       type: String,
       enum: ["pending", "sent", "cancelled"],

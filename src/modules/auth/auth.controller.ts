@@ -7,6 +7,7 @@ import { env } from "../../config/env";
 import { apiError } from "../../errors/api-error";
 import {
   BiometricLoginType,
+  ChangePasswordType,
   DisableBiometricType,
   EnableBiometricType,
 } from "./auth.type";
@@ -179,6 +180,23 @@ export class AuthController {
       return res
         .status(result.success ? HttpCodes.Ok : HttpCodes.BadRequest)
         .json(result);
+    }
+  );
+
+  changePassword = asyncHandler(
+    async (req: Request, res: Response, _next: NextFunction) => {
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+      }
+
+      const result = await this.authService.changePassword(
+        userId,
+        req.body as ChangePasswordType
+      );
+
+      return res.status(HttpCodes.Ok).json(result);
     }
   );
 
