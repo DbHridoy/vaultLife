@@ -1,8 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { SupportService } from "./support.service";
-import { TypedRequestBody } from "../../types/request.type";
-import { createSupportType, updateSupportStatusType } from "./support.type";
+import { TypedRequestBody, TypedRequestBodyWithFile } from "../../types/request.type";
+import {
+  createSupportType,
+  resolveSupportReportType,
+  updateSupportStatusType,
+} from "./support.type";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { HttpCodes } from "../../constants/status-codes";
@@ -74,18 +78,64 @@ export class SupportController {
 
   updateReportStatus = asyncHandler(
     async (
-      req: Request<{ id: string }, {}, updateSupportStatusType>,
+      req: TypedRequestBodyWithFile<updateSupportStatusType> & Request<{ id: string }>,
       res: Response,
       _next: NextFunction
     ) => {
-      const report = await this.supportService.updateReportStatus(
+      const adminUserId = req.user?.userId;
+
+      if (!adminUserId) {
+        throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+      }
+
+      const report =
+        req.body.status === "resolved"
+          ? await this.supportService.resolveReport(
+              req.params.id,
+              adminUserId,
+              {
+                resolutionNote: req.body.resolutionNote!.trim(),
+              },
+              Array.isArray(req.files) ? req.files : req.file ? [req.file] : []
+            )
+          : await this.supportService.updateReportStatus(
+              req.params.id,
+              req.body.status
+            );
+
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message:
+          req.body.status === "resolved"
+            ? "Support report resolved and closed successfully"
+            : "Support report status updated successfully",
+        data: report,
+      });
+    }
+  );
+
+  resolveReport = asyncHandler(
+    async (
+      req: TypedRequestBodyWithFile<resolveSupportReportType> & Request<{ id: string }>,
+      res: Response,
+      _next: NextFunction
+    ) => {
+      const adminUserId = req.user?.userId;
+
+      if (!adminUserId) {
+        throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+      }
+
+      const report = await this.supportService.resolveReport(
         req.params.id,
-        req.body.status
+        adminUserId,
+        req.body,
+        Array.isArray(req.files) ? req.files : req.file ? [req.file] : []
       );
 
       res.status(HttpCodes.Ok).json({
         success: true,
-        message: "Support report status updated successfully",
+        message: "Support report resolved and closed successfully",
         data: report,
       });
     }

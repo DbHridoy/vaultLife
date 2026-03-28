@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import User from "./user.model";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
+import { Roles } from "../../constants/roles";
 
 type UserMetricsPeriod = "week" | "month" | "year";
 
@@ -282,6 +283,13 @@ export class UserRepository {
 
   findUserByEmail = async (email: string) => {
     return await User.findOne({ email });
+  };
+
+  findAdminUsers = async () => {
+    return await User.find({
+      role: { $in: [Roles.Admin, Roles.SuperAdmin] },
+      isBlocked: false,
+    });
   };
 
   updateUserPassword = async (id: Types.ObjectId, hashedPassword: string) => {

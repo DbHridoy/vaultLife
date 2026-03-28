@@ -9,12 +9,14 @@ import {
   updateOwnProfileType,
 } from "./user.type";
 import { Roles } from "../../constants/roles";
+import { NotificationService } from "../notification/notification.service";
 
 export class UserService {
   constructor(
     private userRepo: UserRepository,
     private hashUtils: HashUtils,
-    private mailer: Mailer
+    private mailer: Mailer,
+    private notificationService: NotificationService
   ) {}
 
   private buildUserUpdatePayload = (
@@ -111,6 +113,19 @@ export class UserService {
 
     const newUser = await this.userRepo.createUser(user);
     //await this.mailerUtils.sendPassword(userBody.email, userBody.password);
+    await this.notificationService.notifyAdmins(
+      {
+        title: "New user created",
+        message: `${newUser.fullName} was created with ${newUser.email}.`,
+      },
+      {
+        event: "user_created",
+        createdByUserId: actor.userId,
+        createdUserId: newUser._id.toString(),
+        createdUserEmail: newUser.email,
+        createdUserRole: newUser.role,
+      }
+    );
 
     return newUser;
   };

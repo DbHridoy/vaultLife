@@ -16,10 +16,11 @@ import { HashUtils } from "../../utils/hash-utils";
 import { JwtUtils } from "../../utils/jwt-utils";
 import { Mailer } from "../../utils/mailer-utils";
 import { Roles } from "../../constants/roles";
+import { NotificationService } from "../notification/notification.service";
 
 export class AuthService {
 
-  constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer) {}
+  constructor(private authRepo: AuthRepository,private userRepo:UserRepository,private hashUtils:HashUtils,private jwtUtils:JwtUtils,private mailerUtils:Mailer, private notificationService: NotificationService) {}
 
   private ensureUserIsNotBlocked = (user: { isBlocked?: boolean }) => {
     if (user.isBlocked) {
@@ -48,6 +49,18 @@ export class AuthService {
     // logger.info({ user }, "user");
 
     const newUser = await this.userRepo.createUser(user);
+    await this.notificationService.notifyAdmins(
+      {
+        title: "New user registered",
+        message: `${newUser.fullName} registered with ${newUser.email}.`,
+      },
+      {
+        event: "user_registered",
+        registeredUserId: newUser._id.toString(),
+        registeredUserEmail: newUser.email,
+        registeredUserRole: newUser.role,
+      }
+    );
     return newUser;
   };
 
@@ -202,10 +215,8 @@ export class AuthService {
 
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min expiry
 
-    // Save or update OTP in DB
-
     try {
-      const result = this.mailerUtils.sendOtp(email, otp);
+      await this.mailerUtils.sendOtp(email, otp);
       const insertedOtp = await this.authRepo.createOtp(email, otp, expiresAt);
       return {
         success: true,
@@ -213,8 +224,20 @@ export class AuthService {
         message: "OTP sent successfully",
       };
     } catch (error) {
-      console.error("Email error:", error);
-      return { success: false, message: "Failed to send OTP" };
+      logger.error({ error, email }, "Failed to send OTP email");
+
+      const message =
+        error instanceof Error ? error.message : "Unknown email error";
+      const isGmailAuthError =
+        message.includes("Invalid login") ||
+        message.includes("BadCredentials");
+
+      return {
+        success: false,
+        message: isGmailAuthError
+          ? "Failed to send OTP. Set GMAIL_USER to your Gmail address and GMAIL_PASS to a 16-character Google App Password."
+          : "Failed to send OTP",
+      };
     }
   }
 

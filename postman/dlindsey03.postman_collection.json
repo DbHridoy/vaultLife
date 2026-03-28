@@ -50,6 +50,18 @@
       "value": ""
     },
     {
+      "key": "supportResolutionNote",
+      "value": "We reviewed your issue, applied the fix, and closed the report."
+    },
+    {
+      "key": "supportResolutionAttachmentFile",
+      "value": "/absolute/path/to/resolution-attachment.pdf"
+    },
+    {
+      "key": "supportResolutionAttachmentImage",
+      "value": "/absolute/path/to/resolution-image.jpg"
+    },
+    {
       "key": "biometricToken",
       "value": ""
     },
@@ -1608,6 +1620,50 @@
                 "support",
                 "{{supportId}}",
                 "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Support Report",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "resolutionNote",
+                  "value": "{{supportResolutionNote}}",
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": "{{supportResolutionAttachmentFile}}"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": "{{supportResolutionAttachmentImage}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/support/{{supportId}}/resolve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "support",
+                "{{supportId}}",
+                "resolve"
               ]
             }
           },

@@ -145,6 +145,27 @@ export class NotificationService {
     return await this.notificationRepository.getUserNotifications(userId);
   }
 
+  async notifyAdmins(
+    payload: createNotificationType,
+    metadata: Record<string, unknown> = {},
+    requestedChannels?: { email?: boolean; push?: boolean } | null
+  ) {
+    const admins = await this.userRepository.findAdminUsers();
+
+    const results = await Promise.all(
+      admins.map((admin) =>
+        this.sendNotificationToUser(
+          admin._id.toString(),
+          payload,
+          metadata,
+          requestedChannels
+        )
+      )
+    );
+
+    return results;
+  }
+
   async processDueReminders() {
     const reminders = await this.reminderRepository.getDuePendingReminders();
     const results = [];

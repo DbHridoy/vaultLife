@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { authMiddleware, supportController } from "../../container";
 import { validate } from "../../middlewares/validate.middleware";
-import { CreateSupportSchema, UpdateSupportStatusSchema } from "./support.schema";
+import {
+  CreateSupportSchema,
+  ResolveSupportReportSchema,
+  UpdateSupportStatusSchema,
+} from "./support.schema";
+import { upload } from "../../middlewares/upload.middleware";
 
 const supportRoute = Router();
 
@@ -21,8 +26,16 @@ supportRoute.get(
 supportRoute.patch(
   "/:id/status",
   authMiddleware.authorize(["superadmin", "admin"]),
+  upload.array("attachments", 5),
   validate(UpdateSupportStatusSchema),
   supportController.updateReportStatus
+);
+supportRoute.patch(
+  "/:id/resolve",
+  authMiddleware.authorize(["superadmin", "admin"]),
+  upload.array("attachments", 5),
+  validate(ResolveSupportReportSchema),
+  supportController.resolveReport
 );
 
 export default supportRoute;

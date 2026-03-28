@@ -7,7 +7,9 @@ export class SupportRepository {
   };
 
   getAllReports = async () => {
-    return await Support.find().populate("userId").sort({ createdAt: -1 });
+    return await Support.find()
+      .populate("userId resolvedBy")
+      .sort({ createdAt: -1 });
   };
 
   getReportsByUserId = async (userId: string) => {
@@ -15,10 +17,21 @@ export class SupportRepository {
   };
 
   getReportById = async (id: string) => {
-    return await Support.findById(id).populate("userId");
+    return await Support.findById(id).populate("userId resolvedBy");
   };
 
   updateReportStatus = async (id: string, status: string) => {
-    return await Support.findByIdAndUpdate(id, { status }, { new: true }).populate("userId");
+    return await Support.findByIdAndUpdate(id, { status }, { new: true }).populate(
+      "userId resolvedBy"
+    );
+  };
+
+  resolveReport = async (
+    id: string,
+    payload: Record<string, unknown>
+  ) => {
+    return await Support.findByIdAndUpdate(id, payload, {
+      new: true,
+    }).populate("userId resolvedBy");
   };
 }
