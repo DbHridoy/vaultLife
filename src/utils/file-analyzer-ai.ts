@@ -46,7 +46,8 @@ Do NOT include comments, markdown, explanation, or extra text.
 
 Return JSON in this shape:
 {
-"documentCategory": "Passport",
+"title": "",
+"documentCategory": "",
 "fields": {
 "shortDescription": "",
 "documentNumber": "",

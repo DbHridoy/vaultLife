@@ -6,7 +6,7 @@ import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { TypedRequestBodyWithFile } from "../../types/request.type";
 import { TypedRequestBody } from "../../types/request.type";
-import { confirmDocumentType } from "./document.type";
+import { confirmDocumentType, DocumentListQuery } from "./document.type";
 
 export class DocumentController {
   constructor(private documentService: DocumentService) {}
@@ -54,13 +54,23 @@ export class DocumentController {
   );
 
   getAllDocuments = asyncHandler(
-    async (_req: Request, res: Response, _next: NextFunction) => {
-      const documents = await this.documentService.getAllDocuments();
+    async (req: Request<{}, {}, {}, DocumentListQuery>, res: Response, _next: NextFunction) => {
+      if (!req.user?.userId || !req.user.role) {
+        throw new apiError(Errors.Unauthorized.code, "Unauthorized");
+      }
+
+      const documents = await this.documentService.getAllDocuments(req.query, req.user);
 
       res.status(HttpCodes.Ok).json({
         success: true,
         message: "Documents fetched successfully",
-        data: documents,
+        data: documents.data,
+        total: documents.total,
+        page: documents.page,
+        limit: documents.limit,
+        totalPages: documents.totalPages,
+        hasNextPage: documents.hasNextPage,
+        hasPrevPage: documents.hasPrevPage,
       });
     }
   );

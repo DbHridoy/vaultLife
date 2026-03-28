@@ -8,7 +8,11 @@ import fileUploadUtils from "../../utils/s3-upload";
 import { FileAnalyzerAI } from "../../utils/file-analyzer-ai";
 import { env } from "../../config/env";
 import { MulterFile } from "../../types/request.type";
-import { confirmDocumentType } from "./document.type";
+import {
+  confirmDocumentType,
+  DocumentListQuery,
+} from "./document.type";
+import { Roles } from "../../constants/roles";
 
 type DocumentDraft = {
   id: string;
@@ -66,6 +70,14 @@ export class DocumentService {
       ...rest,
       documentCategory: documentCategory || documentType || "Other",
     };
+  }
+
+  private sanitizeDocumentListQuery(query: DocumentListQuery = {}) {
+    const sanitizedEntries = Object.entries(query).filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    );
+
+    return Object.fromEntries(sanitizedEntries) as DocumentListQuery;
   }
 
   private async cleanupExpiredDrafts() {
@@ -214,9 +226,34 @@ export class DocumentService {
     }
   }
 
-  async getAllDocuments() {
-    const documents = await this.documentRepository.getAllDocuments();
-    return documents.map((document) => this.formatDocumentResponse(document));
+  async getAllDocuments(
+    query: DocumentListQuery,
+    user: { userId: string; role: string }
+  ) {
+    const sanitizedQuery = this.sanitizeDocumentListQuery(query);
+    const baseFilter =
+      user.role === Roles.Admin || user.role === Roles.SuperAdmin
+        ? {}
+        : { uploadedBy: user.userId };
+
+    const { data, total } = await this.documentRepository.getAllDocuments(
+      sanitizedQuery,
+      baseFilter
+    );
+
+    const page = Math.max(Number(sanitizedQuery.page) || 1, 1);
+    const limit = Math.max(Number(sanitizedQuery.limit) || 0, 0);
+    const totalPages = limit > 0 ? Math.ceil(total / limit) : total > 0 ? 1 : 0;
+
+    return {
+      data: data.map((document) => this.formatDocumentResponse(document)),
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: limit > 0 ? page < totalPages : false,
+      hasPrevPage: limit > 0 ? page > 1 : false,
+    };
   }
 
   async getDocumentById(id: string) {

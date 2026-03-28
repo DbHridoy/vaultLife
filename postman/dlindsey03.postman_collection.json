@@ -1130,9 +1130,39 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/document",
+              "raw": "{{baseUrl}}/document?page=1&limit=10&search=&sort=-createdAt&documentCategory=&mimeType=&title=",
               "host": [
                 "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "sort",
+                  "value": "-createdAt"
+                },
+                {
+                  "key": "documentCategory",
+                  "value": ""
+                },
+                {
+                  "key": "mimeType",
+                  "value": ""
+                },
+                {
+                  "key": "title",
+                  "value": ""
+                }
               ],
               "path": [
                 "document"
