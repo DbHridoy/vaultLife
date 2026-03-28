@@ -62,6 +62,10 @@
       "value": "/absolute/path/to/resolution-image.jpg"
     },
     {
+      "key": "pushNotificationToken",
+      "value": "ExpoPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+    },
+    {
       "key": "biometricToken",
       "value": ""
     },
@@ -728,7 +732,7 @@
           "response": []
         },
         {
-          "name": "Update My Notification Preferences",
+          "name": "Register Push Token And Enable Notifications",
           "request": {
             "method": "PATCH",
             "header": [
@@ -743,7 +747,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"pushNotificationToken\": \"ExpoPushToken[xxxxxxxxxxxxxxxxxxxxxx]\"\n}"
+              "raw": "{\n  \"email\": true,\n  \"push\": true,\n  \"pushNotificationToken\": \"{{pushNotificationToken}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/user/me/notification-preferences",
@@ -755,7 +759,41 @@
                 "me",
                 "notification-preferences"
               ]
-            }
+            },
+            "description": "Call this after the app gets the device push token. Use an Expo push token or a raw FCM token."
+          },
+          "response": []
+        },
+        {
+          "name": "Disable Push Notifications",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": true,\n  \"push\": false,\n  \"pushNotificationToken\": \"{{pushNotificationToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me/notification-preferences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me",
+                "notification-preferences"
+              ]
+            },
+            "description": "Use this to stop push delivery for the current user while keeping email notifications enabled."
           },
           "response": []
         },
@@ -1240,7 +1278,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"message\": \"Your document expires soon\",\n  \"recurrence\": \"monthly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": false\n  }\n}"
+              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"message\": \"Your document expires soon\",\n  \"recurrence\": \"monthly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reminder",
@@ -1250,7 +1288,8 @@
               "path": [
                 "reminder"
               ]
-            }
+            },
+            "description": "This exercises the reminder flow with push enabled. Push will only be delivered if the user already registered a push token and enabled push."
           },
           "response": []
         },
@@ -1401,7 +1440,7 @@
       "name": "Notifications",
       "item": [
         {
-          "name": "Create My Notification",
+          "name": "Create My Notification (Push Test)",
           "request": {
             "method": "POST",
             "header": [
@@ -1416,7 +1455,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Document reminder\",\n  \"message\": \"Your passport will expire soon\",\n  \"documentId\": \"{{documentId}}\",\n  \"reminderId\": \"{{reminderId}}\"\n}"
+              "raw": "{\n  \"title\": \"Push test\",\n  \"message\": \"If push is enabled and a token is registered, this should arrive on the device.\",\n  \"documentId\": \"{{documentId}}\",\n  \"reminderId\": \"{{reminderId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/notification/me",
@@ -1427,7 +1466,8 @@
                 "notification",
                 "me"
               ]
-            }
+            },
+            "description": "Sends a notification through the same backend flow used by reminders and support resolution. It may send email and push depending on user preferences."
           },
           "response": []
         },
@@ -1473,7 +1513,8 @@
                 "notification",
                 "process-due-reminders"
               ]
-            }
+            },
+            "description": "Manually triggers due reminder processing. Useful after creating a reminder with push enabled."
           },
           "response": []
         }
@@ -1665,7 +1706,8 @@
                 "{{supportId}}",
                 "resolve"
               ]
-            }
+            },
+            "description": "Resolves the support report. The backend sends a dedicated resolution email and also creates a notification, which can deliver push if the user enabled push and registered a token."
           },
           "response": []
         }
