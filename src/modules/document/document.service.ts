@@ -48,6 +48,16 @@ export class DocumentService {
     return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
   }
 
+  private buildDraftTitle(originalName: string, aiTitle?: string) {
+    const normalizedAiTitle = aiTitle?.trim();
+    if (normalizedAiTitle) {
+      return normalizedAiTitle;
+    }
+
+    const fileNameWithoutExtension = path.parse(originalName).name.trim();
+    return fileNameWithoutExtension || "Untitled Document";
+  }
+
   private async ensureDraftDirectory() {
     await fs.mkdir(this.draftDirectory, { recursive: true });
   }
@@ -180,6 +190,7 @@ export class DocumentService {
 
     return {
       draftId: draft.id,
+      title: this.buildDraftTitle(draft.originalName, aiResult.title),
       originalName: draft.originalName,
       mimeType: draft.mimeType,
       size: draft.size,

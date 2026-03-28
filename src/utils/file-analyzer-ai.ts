@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { env } from "../config/env";
 
 export type DocumentAiResult = {
+  title: string;
   documentCategory: string;
   fields: Record<string, unknown>;
 };
@@ -92,6 +93,7 @@ Return JSON in this shape:
     };
 
     return {
+      title: typeof parsed.title === "string" ? parsed.title.trim() : "",
       documentCategory: parsed.documentCategory || parsed.documentType || "Other",
       fields: parsed.fields && typeof parsed.fields === "object" ? parsed.fields : {},
     };
