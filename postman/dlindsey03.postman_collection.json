@@ -1336,7 +1336,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"message\": \"Your document expires soon\",\n  \"recurrence\": \"monthly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
+              "raw": "{\n  \"documentId\": \"{{documentId}}\",\n  \"remindAt\": \"2026-04-01T09:00:00.000Z\",\n  \"title\": \"Passport expiry reminder\",\n  \"message\": \"Your document expires soon\",\n  \"recurrence\": \"monthly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reminder",
@@ -1454,7 +1454,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"message\": \"Updated reminder message\",\n  \"status\": \"pending\",\n  \"recurrence\": \"yearly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
+              "raw": "{\n  \"title\": \"Updated passport expiry reminder\",\n  \"message\": \"Updated reminder message\",\n  \"status\": \"pending\",\n  \"recurrence\": \"yearly\",\n  \"notificationChannels\": {\n    \"email\": true,\n    \"push\": true\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reminder/{{reminderId}}",
