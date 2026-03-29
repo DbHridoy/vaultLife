@@ -30,4 +30,12 @@ export class DocumentRepository {
   getDocumentById = async (id: string) => {
     return await Document.findById(id);
   };
+
+  updateDocument = async (id: string, payload: Record<string, unknown>) => {
+    return await Document.findByIdAndUpdate(id, payload, { new: true });
+  };
+
+  deleteDocument = async (id: string) => {
+    return await Document.findByIdAndDelete(id);
+  };
 }

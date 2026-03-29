@@ -31,11 +31,11 @@ const reminderSchema = new Schema(
     notificationChannels: {
       email: {
         type: Boolean,
-        default: true,
+        default: false,
       },
       push: {
         type: Boolean,
-        default: true,
+        default: false,
       },
     },
     status: {

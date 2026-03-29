@@ -11,6 +11,7 @@ import { MulterFile } from "../../types/request.type";
 import {
   confirmDocumentType,
   DocumentListQuery,
+  updateDocumentType,
 } from "./document.type";
 import { Roles } from "../../constants/roles";
 
@@ -88,6 +89,22 @@ export class DocumentService {
     );
 
     return Object.fromEntries(sanitizedEntries) as DocumentListQuery;
+  }
+
+  private canManageDocument(
+    user: { userId: string; role: string },
+    document: { uploadedBy?: { toString(): string } | string | null }
+  ) {
+    if (user.role === Roles.Admin || user.role === Roles.SuperAdmin) {
+      return true;
+    }
+
+    const uploadedBy =
+      typeof document.uploadedBy === "string"
+        ? document.uploadedBy
+        : document.uploadedBy?.toString();
+
+    return uploadedBy === user.userId;
   }
 
   private async cleanupExpiredDrafts() {
@@ -275,6 +292,50 @@ export class DocumentService {
     }
 
     return this.formatDocumentResponse(document);
+  }
+
+  async updateDocument(
+    id: string,
+    payload: updateDocumentType,
+    user: { userId: string; role: string }
+  ) {
+    const document = await this.documentRepository.getDocumentById(id);
+
+    if (!document) {
+      throw new apiError(Errors.NotFound.code, "Document not found");
+    }
+
+    if (!this.canManageDocument(user, document)) {
+      throw new apiError(
+        Errors.Forbidden.code,
+        "You are not allowed to edit this document"
+      );
+    }
+
+    const updatedDocument = await this.documentRepository.updateDocument(id, payload);
+
+    if (!updatedDocument) {
+      throw new apiError(Errors.NotFound.code, "Document not found");
+    }
+
+    return this.formatDocumentResponse(updatedDocument);
+  }
+
+  async deleteDocument(id: string, user: { userId: string; role: string }) {
+    const document = await this.documentRepository.getDocumentById(id);
+
+    if (!document) {
+      throw new apiError(Errors.NotFound.code, "Document not found");
+    }
+
+    if (!this.canManageDocument(user, document)) {
+      throw new apiError(
+        Errors.Forbidden.code,
+        "You are not allowed to delete this document"
+      );
+    }
+
+    await this.documentRepository.deleteDocument(id);
   }
 }
 

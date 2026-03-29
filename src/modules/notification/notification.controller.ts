@@ -1,8 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler";
 import { NotificationService } from "./notification.service";
-import { TypedRequestBody } from "../../types/request.type";
-import { createNotificationType } from "./notification.type";
+import { TypedRequestBody, TypedRequestParams } from "../../types/request.type";
+import {
+  createNotificationType,
+  updateNotificationReadStatusType,
+} from "./notification.type";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { HttpCodes } from "../../constants/status-codes";
@@ -47,6 +50,34 @@ export class NotificationController {
         success: true,
         message: "Notifications fetched successfully",
         data: notifications,
+      });
+    }
+  );
+
+  updateMyNotificationReadStatus = asyncHandler(
+    async (
+      req: TypedRequestParams<
+        { id: string },
+        updateNotificationReadStatusType
+      >,
+      res: Response,
+      _next: NextFunction
+    ) => {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new apiError(Errors.Unauthorized.code, Errors.Unauthorized.message);
+      }
+
+      const notification = await this.notificationService.updateMyNotificationReadStatus(
+        req.params.id,
+        userId,
+        req.body
+      );
+
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: `Notification marked as ${notification.isRead ? "read" : "unread"} successfully`,
+        data: notification,
       });
     }
   );

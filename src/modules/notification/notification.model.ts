@@ -54,6 +54,15 @@ const notificationSchema = new Schema(
     sentAt: {
       type: Date,
     },
+    isRead: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    readAt: {
+      type: Date,
+      default: null,
+    },
     metadata: {
       type: Schema.Types.Mixed,
       default: {},

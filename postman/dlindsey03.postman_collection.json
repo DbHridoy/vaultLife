@@ -46,6 +46,10 @@
       "value": ""
     },
     {
+      "key": "notificationId",
+      "value": ""
+    },
+    {
       "key": "supportId",
       "value": ""
     },
@@ -1243,6 +1247,60 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Update Document",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Passport Record\",\n  \"documentCategory\": \"passport\",\n  \"extractedData\": {\n    \"documentNumber\": \"A12345678\",\n    \"surname\": \"Doe\",\n    \"givenNames\": \"John Michael\",\n    \"nationality\": \"Bangladeshi\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/document/{{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document",
+                "{{documentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/document/{{documentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "document",
+                "{{documentId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1441,6 +1499,19 @@
       "item": [
         {
           "name": "Create My Notification (Push Test)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "const notificationId = json?.data?._id || json?.data?.id || json?._id;",
+                  "if (notificationId) pm.collectionVariables.set('notificationId', notificationId);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -1489,6 +1560,72 @@
               "path": [
                 "notification",
                 "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification As Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isRead\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notification/me/{{notificationId}}/read-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "me",
+                "{{notificationId}}",
+                "read-status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification As Unread",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isRead\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notification/me/{{notificationId}}/read-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification",
+                "me",
+                "{{notificationId}}",
+                "read-status"
               ]
             }
           },

@@ -6,7 +6,10 @@ import { ReminderRepository } from "../reminder/reminder.repository";
 import { DocumentRepository } from "../document/document.repository";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
-import { createNotificationType } from "./notification.type";
+import {
+  createNotificationType,
+  updateNotificationReadStatusType,
+} from "./notification.type";
 
 export class NotificationService {
   constructor(
@@ -137,12 +140,33 @@ export class NotificationService {
       },
       status,
       sentAt: emailDelivered || pushDelivered ? new Date() : undefined,
+      isRead: false,
+      readAt: null,
       metadata,
     });
   }
 
   async getMyNotifications(userId: string) {
     return await this.notificationRepository.getUserNotifications(userId);
+  }
+
+  async updateMyNotificationReadStatus(
+    notificationId: string,
+    userId: string,
+    payload: updateNotificationReadStatusType
+  ) {
+    const notification =
+      await this.notificationRepository.updateUserNotificationReadStatus(
+        notificationId,
+        userId,
+        payload.isRead
+      );
+
+    if (!notification) {
+      throw new apiError(Errors.NotFound.code, "Notification not found");
+    }
+
+    return notification;
   }
 
   async notifyAdmins(

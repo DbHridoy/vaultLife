@@ -6,3 +6,7 @@ export const CreateNotificationSchema = z.object({
   documentId: z.string().optional(),
   reminderId: z.string().optional(),
 });
+
+export const UpdateNotificationReadStatusSchema = z.object({
+  isRead: z.boolean(),
+});

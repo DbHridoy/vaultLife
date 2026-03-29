@@ -5,8 +5,12 @@ import { HttpCodes } from "../../constants/status-codes";
 import { apiError } from "../../errors/api-error";
 import { Errors } from "../../constants/error-codes";
 import { TypedRequestBodyWithFile } from "../../types/request.type";
-import { TypedRequestBody } from "../../types/request.type";
-import { confirmDocumentType, DocumentListQuery } from "./document.type";
+import { TypedRequestBody, TypedRequestParams } from "../../types/request.type";
+import {
+  confirmDocumentType,
+  DocumentListQuery,
+  updateDocumentType,
+} from "./document.type";
 
 export class DocumentController {
   constructor(private documentService: DocumentService) {}
@@ -87,6 +91,49 @@ export class DocumentController {
         success: true,
         message: "Document fetched successfully",
         data: document,
+      });
+    }
+  );
+
+  updateDocument = asyncHandler(
+    async (
+      req: TypedRequestParams<{ id: string }, updateDocumentType>,
+      res: Response,
+      _next: NextFunction
+    ) => {
+      if (!req.user?.userId || !req.user.role) {
+        throw new apiError(Errors.Unauthorized.code, "Unauthorized");
+      }
+
+      const document = await this.documentService.updateDocument(
+        req.params.id,
+        req.body,
+        req.user
+      );
+
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Document updated successfully",
+        data: document,
+      });
+    }
+  );
+
+  deleteDocument = asyncHandler(
+    async (
+      req: Request<{ id: string }>,
+      res: Response,
+      _next: NextFunction
+    ) => {
+      if (!req.user?.userId || !req.user.role) {
+        throw new apiError(Errors.Unauthorized.code, "Unauthorized");
+      }
+
+      await this.documentService.deleteDocument(req.params.id, req.user);
+
+      res.status(HttpCodes.Ok).json({
+        success: true,
+        message: "Document deleted successfully",
       });
     }
   );
