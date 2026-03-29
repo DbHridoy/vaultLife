@@ -199,7 +199,9 @@ export class NotificationService {
         _id: { toString(): string };
         originalName?: string;
       } | null;
-      const title = "Document reminder";
+      const title = reminder.title?.trim()
+        ? reminder.title
+        : "Document reminder";
       const message = reminder.message
         ? reminder.message
         : `Reminder for document ${document?.originalName || "document"}`;

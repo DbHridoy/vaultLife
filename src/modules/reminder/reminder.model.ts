@@ -19,6 +19,11 @@ const reminderSchema = new Schema(
       required: true,
       index: true,
     },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     message: {
       type: String,
       trim: true,
